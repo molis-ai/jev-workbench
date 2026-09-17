@@ -10,6 +10,7 @@ import {
   Trash2,
   History,
   Upload,
+  ChevronRight,
 } from "lucide-react";
 import { api, pretty, sample, demoMode } from "./api";
 import { Button, Field, Drawer, Notice, JsonEditor } from "./ui";
@@ -104,6 +105,11 @@ function Editor({
     };
   }, [dirty, saved, config, raw, advanced, input, result, resultConfig]);
   useEffect(() => () => abort.current?.abort(), []);
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(""), 4000);
+    return () => clearTimeout(t);
+  }, [message]);
   async function task(name: string, fn: () => Promise<void>) {
     if (busy) return;
     setBusy(name);
@@ -178,7 +184,12 @@ function Editor({
         <div>
           <div className="row">
             <h1>{config.name}</h1>
-            <span className="primitive-tag">
+            <span
+              className={
+                "primitive-tag type-" +
+                (Object.values(config.questions)[0] as any)?.type
+              }
+            >
               {[
                 ...new Set(
                   Object.values(config.questions).map(
@@ -195,14 +206,26 @@ function Editor({
                 : tr("未发布")}
             </span>
           </div>
-          <p>
-            {dirty ? tr("有未保存修改") : tr("草稿已保存")} {tr("· 修订")}{" "}
-            {saved.draft_revision} {tr("· 已发布版本不受草稿影响")}
+          <p className="editor-meta">
+            <code className="function-key">{saved.function_key}</code>
+            <span>
+              {message
+                ? tr(message)
+                : dirty
+                  ? tr("有未保存修改")
+                  : tr("草稿已保存")}
+              {tr(" · 修订")} {saved.draft_revision}
+              {tr(" · 已发布版本不受草稿影响")}
+            </span>
           </p>
         </div>
         <div className="row">
           <Button onClick={() => setDrawer("versions")}>{tr("版本")}</Button>
-          <Button onClick={() => setDrawer("runs")} aria-label={tr("查看记录")}>
+          <Button
+            className="icon-only"
+            onClick={() => setDrawer("runs")}
+            aria-label={tr("查看记录")}
+          >
             <History size={16} />
           </Button>
           <Button
@@ -256,17 +279,18 @@ function Editor({
           )}
         </Notice>
       )}
-      {message && <Notice>{tr(message)}</Notice>}
+
       <div className="editor-grid">
-        <section className="panel editor-panel">
-          <div className="panel-title">
-            <h2>{tr("定义判断")}</h2>
-            <code>{saved.function_key}</code>
-          </div>
-          <div className="panel-body">
-            <SimpleDefinition config={config} setConfig={setConfig} />
-            <details className="advanced-config">
-              <summary>{tr("高级配置 · 输入、规则与输出")}</summary>
+        <section className="editor-panel">
+          <SimpleDefinition config={config} setConfig={setConfig} />
+          <details className="config-sheet advanced-config">
+            <summary>
+              <span>
+                <strong>{tr("高级配置")}</strong>
+                <small>{tr("输入、规则与输出")}</small>
+              </span>
+              <ChevronRight size={16} />
+            </summary>
               <div className="tabs">
                 {["基本信息", "输入", "问题", "输出与规则"].map((t) => (
                   <button
@@ -320,15 +344,17 @@ function Editor({
                   />
                 )}
               </div>
-            </details>
-          </div>
+          </details>
         </section>
-        <section className="panel playground">
-          <div className="panel-title">
-            <h2>{tr("试跑当前编辑")}</h2>
+        <section className="preview-sheet playground">
+          <header className="preview-head">
+            <div>
+              <strong>{tr("试跑当前编辑")}</strong>
+              <p>{tr("用当前草稿试一次，发布前必须成功。")}</p>
+            </div>
             <span className="badge">{tr("未发布")}</span>
-          </div>
-          <div className="panel-body playground-body">
+          </header>
+          <div className="preview-body playground-body">
             <div className="stack playground-input">
               <div className="row between">
                 <strong>{tr("样例输入")}</strong>
@@ -460,11 +486,11 @@ function Editor({
                   </Button>
                 )}
               </div>
-              <small>
+              <small className="preview-hint">
                 {demoMode
                   ? tr("离线模拟，不发送网络请求、不计费。")
                   : tr("发送至 TypeSafe，可能计费。")}
-                ⌘ / Ctrl + Enter
+                <span> ⌘ / Ctrl + Enter</span>
               </small>
             </div>
             <div className="stack playground-result">

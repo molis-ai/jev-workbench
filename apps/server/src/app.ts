@@ -583,6 +583,7 @@ export async function createApp(options: {
           runtime: z.enum(["claude_code", "codex", "opencode", "pi"]),
           scope: z.enum(["user", "project"]),
           project: z.string().optional(),
+          skill: z.enum(["jev-workbench", "typesafe-ai"]),
         })
         .strict()
         .parse(req.body),

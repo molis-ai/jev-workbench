@@ -16,11 +16,11 @@ export function officialSnippet(language: string, origin: string) {
   const endpoint = origin.replace(/\/$/, "") + "/v1/systemone";
   const payload = {
     model: "jev-1.13.0",
-    state: "我的订单被重复扣款，请协助退款。",
+    state: "Please refund the duplicate charge.",
     questions: {
       is_billing: {
         type: "noul",
-        instructions: "这是账单或退款问题吗？",
+        instructions: "Is this a billing or refund issue?",
       },
     },
   };

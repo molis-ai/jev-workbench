@@ -1,5 +1,6 @@
 import { tr, dateTime, getLanguage } from "./i18n";
-import { snippet, officialSnippet } from "./snippets";
+import { snippet } from "./snippets";
+import { ApiReference } from "./ApiReference";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Copy, KeyRound, Plug, Terminal } from "lucide-react";
@@ -74,8 +75,7 @@ export function Connections({
   const endpoint = c ? `${location.origin}/v1/functions/${c.key}/invoke` : "";
   const code = c
     ? snippet(lang, endpoint, version, c.input_schema)
-    : "先选择一个已发布函数与版本。";
-  const officialCode = officialSnippet(lang, location.origin);
+    : tr("先选择一个已发布函数与版本。");
   const GrantPicker = () => (
     <div className="stack">
       <p className="muted">
@@ -184,9 +184,17 @@ export function Connections({
       {tab === "API 调用" ? (
         <>
           <section className="panel">
+            <div className="panel-title">
+              <h2>{tr("接口文档")}</h2>
+            </div>
+            <div className="panel-body">
+              <ApiReference origin={location.origin} />
+            </div>
+          </section>
+          <section className="panel">
             <div className="panel-body stack">
               <div className="row">
-                <Field label={tr("判断函数")}>
+                <Field label={tr("已发布函数")}>
                   <select
                     value={selected}
                     onChange={(e) => {
@@ -250,19 +258,6 @@ export function Connections({
                 </Button>
               </div>
               <pre className="code-block">{code}</pre>
-              <details>
-                <summary>{tr("官方 Jev 入口（需单独授权）")}</summary>
-                <p className="muted">
-                  {tr(
-                    "调用方按官方 {model,state,questions} 传参。凭证必须勾选「允许官方 Jev 调用」。演示服务拒绝此入口。",
-                  )}
-                </p>
-                <div className="endpoint">
-                  <span>POST</span>
-                  <code>{`${location.origin}/v1/systemone`}</code>
-                </div>
-                <pre className="code-block">{officialCode}</pre>
-              </details>
               {c && (
                 <details>
                   <summary>{tr("输入与输出合同")}</summary>
@@ -455,8 +450,14 @@ export function Connections({
           <section className="panel">
             <div className="panel-title">
               <h2>
-                {tr("生成")}
-                {runtime} {tr("接入配置")}
+                {
+                  {
+                    claude_code: "Claude Code",
+                    codex: "Codex",
+                    opencode: "OpenCode",
+                    pi: "Pi",
+                  }[runtime]
+                }
               </h2>
             </div>
             <div className="panel-body stack">
@@ -551,6 +552,101 @@ export function Connections({
           </section>
           <section className="panel">
             <div className="panel-title">
+              <h2>{tr("Jev Workbench skill")}</h2>
+            </div>
+            <div className="panel-body stack">
+              <p className="muted">
+                {tr(
+                  "安装本服务的 skill：说明 HTTP / MCP 接口，并要求 Agent 先向本机列出可用函数再调用。与 MCP 一起构成一站式接入。确认前不改运行端。",
+                )}
+              </p>
+              <Button
+                disabled={busy}
+                onClick={() =>
+                  task(async () =>
+                    setSkillPlan(
+                      await api("/skills/plan", "POST", {
+                        runtime,
+                        scope,
+                        skill: "jev-workbench",
+                        ...(scope === "project" ? { project } : {}),
+                      }),
+                    ),
+                  )
+                }
+              >
+                {tr("预览 Workbench Skill")}
+              </Button>
+              {skillPlan?.skill === "jev-workbench" && (
+                <>
+                  <Notice>
+                    {skillPlan.supported
+                      ? tr("确认后只写入本产品条目，保留其他配置。")
+                      : tr(skillPlan.reason)}
+                  </Notice>
+                  <pre className="code-block">{skillPlan.after}</pre>
+                  {skillPlan.supported && (
+                    <Button
+                      disabled={busy}
+                      variant="primary"
+                      onClick={() =>
+                        task(async () => {
+                          await api("/skills/apply", "POST", {
+                            plan_id: skillPlan.plan_id,
+                          });
+                          setSkillPlan(null);
+                          setMessage(tr("Workbench Skill 已安装"));
+                          await skillInstalls.refetch();
+                        })
+                      }
+                    >
+                      {tr("确认安装 Workbench Skill")}
+                    </Button>
+                  )}
+                </>
+              )}
+              {skillInstalls.data?.filter(
+                (s: any) =>
+                  s.status !== "removed" && s.skill_name === "jev-workbench",
+              ).length ? (
+                skillInstalls.data
+                  .filter(
+                    (s: any) =>
+                      s.status !== "removed" &&
+                      s.skill_name === "jev-workbench",
+                  )
+                  .map((s: any) => (
+                    <div className="record" key={s.id}>
+                      <div>
+                        <strong>
+                          {s.skill_name} · {s.runtime} · {s.scope}
+                        </strong>
+                        <span className="badge">{tr("已写入")}</span>
+                      </div>
+                      <div className="row">
+                        <Button
+                          disabled={busy}
+                          variant="danger"
+                          onClick={() =>
+                            task(async () => {
+                              await api(`/skills/${s.id}/remove`, "POST", {});
+                              setMessage(tr("Skill 已卸载"));
+                              await skillInstalls.refetch();
+                            })
+                          }
+                        >
+                          {tr("卸载 Skill")}
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <p className="muted">{tr("尚未安装 Workbench Skill。")}</p>
+              )}
+            </div>
+          </section>
+          <section className="panel">
+            <div className="panel-title">
               <h2>{tr("TypeSafe skill（可选）")}</h2>
             </div>
             <div className="panel-body stack">
@@ -567,6 +663,7 @@ export function Connections({
                       await api("/skills/plan", "POST", {
                         runtime,
                         scope,
+                        skill: "typesafe-ai",
                         ...(scope === "project" ? { project } : {}),
                       }),
                     ),
@@ -575,7 +672,7 @@ export function Connections({
               >
                 {tr("预览 Skill 安装")}
               </Button>
-              {skillPlan && (
+              {skillPlan?.skill === "typesafe-ai" && (
                 <>
                   <Notice>
                     {skillPlan.supported
@@ -603,15 +700,20 @@ export function Connections({
                   )}
                 </>
               )}
-              {skillInstalls.data?.filter((s: any) => s.status !== "removed")
-                .length ? (
+              {skillInstalls.data?.filter(
+                (s: any) =>
+                  s.status !== "removed" && s.skill_name === "typesafe-ai",
+              ).length ? (
                 skillInstalls.data
-                  .filter((s: any) => s.status !== "removed")
+                  .filter(
+                    (s: any) =>
+                      s.status !== "removed" && s.skill_name === "typesafe-ai",
+                  )
                   .map((s: any) => (
                     <div className="record" key={s.id}>
                       <div>
                         <strong>
-                          {s.runtime} · {s.scope}
+                          {s.skill_name} · {s.runtime} · {s.scope}
                         </strong>
                         <span className="badge">{tr("已写入")}</span>
                       </div>

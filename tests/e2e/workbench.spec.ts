@@ -12,15 +12,21 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
   await expect(
     page.getByRole("heading", { name: "Create your first function" }),
   ).toBeVisible();
+  await page.locator(".rail-bottom").getByRole("button", { name: "API docs" }).click();
+  await expect(page.locator(".api-table").getByText("/v1/systemone")).toBeVisible();
+  await expect(
+    page.locator(".api-table").getByText("/v1/functions/:key/invoke"),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.getByRole("button", { name: /^Choice/ }).click();
   await expect(
     page.getByRole("heading", { name: "Ticket routing", exact: true }),
   ).toBeVisible();
   await page.getByLabel("content *").fill("Please refund the duplicate charge");
   await page.getByRole("button", { name: "Run preview", exact: true }).click();
-  await expect(page.getByText("Completed", { exact: true })).toBeVisible();
+  await expect(page.getByText("Done", { exact: true })).toBeVisible();
   await expect(page.locator(".answer-value")).toContainText("billing");
-  await page.getByRole("button", { name: "Save & manage cases" }).click();
+  await page.getByRole("button", { name: "Save cases" }).click();
   await page.getByLabel("Case name").fill("Duplicate charge");
   await page.getByRole("button", { name: "Save current input as a case" }).click();
   await expect(page.getByRole("button", { name: "Load", exact: true })).toBeVisible();
@@ -44,8 +50,8 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
     .locator(".simple-definition")
     .getByLabel("Instructions")
     .fill("Keep unsaved edits");
-  await expect(page.getByText("From an older configuration", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "New function", exact: true }).click();
+  await expect(page.getByText("Stale preview", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Add function" }).click();
   await page.getByRole("button", { name: /^Noul/ }).click();
   await expect(
     page.getByRole("heading", { name: "Evidence check", exact: true }),
@@ -55,7 +61,7 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
   await page.getByRole("button", { name: "Run preview", exact: true }).click();
   await expect(page.locator(".answer-value")).toContainText("0.95");
   await page.screenshot({ path: ".playwright/noul.png", fullPage: true });
-  await page.getByRole("button", { name: "New function", exact: true }).click();
+  await page.getByRole("button", { name: "Add function" }).click();
   await page.getByRole("button", { name: /^Score/ }).click();
   await expect(
     page.locator(".simple-definition").getByLabel("Function name"),
@@ -67,9 +73,9 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
   await page.getByRole("button", { name: "Run preview", exact: true }).click();
   await expect(page.locator(".answer-value")).toContainText("1");
   await expect(page.locator(".score-legend .chosen")).toContainText("Partly");
-  await expect(page.locator(".type-noul")).toBeVisible();
-  await expect(page.locator(".type-choice")).toBeVisible();
-  await expect(page.locator(".type-score")).toBeVisible();
+  await expect(page.locator(".type-tags .type-noul")).toBeVisible();
+  await expect(page.locator(".type-tags .type-choice")).toBeVisible();
+  await expect(page.locator(".type-tags .type-score")).toBeVisible();
   await page.getByRole("button", { name: "Filter functions" }).click();
   await page.getByRole("combobox", { name: "Filter by primitive" }).selectOption("score");
   await expect(page.locator(".function-select")).toHaveCount(1);
@@ -101,7 +107,7 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
         document.documentElement.scrollHeight <= innerHeight + 1,
     ),
   ).toBe(true);
-  await page.locator(".inline-connect>summary").click();
+  await page.getByRole("button", { name: "Connections", exact: true }).click();
   await page.getByRole("button", { name: "Create credential", exact: true }).click();
   await page.getByLabel("Client name").fill("test-service");
   await page.getByRole("dialog").getByRole("checkbox", { name: "Ticket routing" }).check();
@@ -124,18 +130,19 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
     page.getByText('"billing"', { exact: true }).last(),
   ).toBeVisible();
   await page.getByRole("button", { name: "Agents", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Jev Workbench skill" })).toBeVisible();
   await page.screenshot({ path: ".playwright/agents.png", fullPage: true });
-  await page.locator(".inline-connect>summary").click();
   const item = page.locator(".function-item").filter({ hasText: "Ticket routing" });
+  await item.locator(".function-select").click();
   await item.locator("summary").click();
   await item.getByRole("button", { name: "Archive function" }).click();
   await expect(
-    page.getByText("This function is archived. Business calls are blocked. Restore it from the list."),
+    page.getByText("This function is archived. Calls are paused. Unarchive it from the list."),
   ).toBeVisible();
-  await page.getByRole("button", { name: /^Archived/ }).click();
+  await page.locator(".group-heading").filter({ hasText: "Archive" }).click();
   await expect(item).toContainText("Archived");
   await item.locator("summary").click();
-  await item.getByRole("button", { name: "Restore function" }).click();
+  await item.getByRole("button", { name: "Unarchive" }).click();
   await expect(item).toContainText("Published");
   const score = page
     .locator(".function-item")
@@ -145,7 +152,7 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
   await page.getByRole("button", { name: /^Trash/ }).click();
   await expect(score).toContainText("Deleted");
   await score.locator("summary").click();
-  await score.getByRole("button", { name: "Restore function", exact: true }).click();
+  await score.getByRole("button", { name: "Restore", exact: true }).click();
   await expect(score).toContainText("Draft");
   await score.locator("summary").click();
   await score.getByRole("button", { name: "Move to Trash", exact: true }).click();
@@ -154,7 +161,7 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
   await score.getByRole("button", { name: "Delete permanently", exact: true }).click();
   await page
     .getByRole("dialog")
-    .getByRole("button", { name: "Delete permanently" })
+    .getByRole("button", { name: "Confirm delete" })
     .click();
   await expect(score).toHaveCount(0);
   await page.getByLabel("Search functions").fill("Evidence");

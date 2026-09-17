@@ -2,7 +2,7 @@
 
 中文 · [English README with screenshots](README.en.md)
 
-本机判断函数服务：在浏览器里配置输入、问题、复核规则和输出，发布不可变版本，再由 HTTP、MCP 或 Pi 调用同一个执行引擎。也可以把官方 TypeSafe `systemone` 请求代发到云端，TypeSafe Key 只留在本机。
+本机一站式判断函数服务：在浏览器里配置一次，同一份已发布函数同时给普通服务（HTTP）和 AI runtime（MCP + 本仓库 `jev-workbench` skill）。Skill 会要求 Agent 先向本机列出可用函数再调用。TypeSafe Key 留在本机；官方 TypeSafe skill 可选、单独安装。确认前不会改任何运行端。
 
 许可证 [MIT](LICENSE)。安全说明见 [SECURITY.md](SECURITY.md)。当前完成等级是功能可用（离线模拟）：没有 TypeSafe Key，因此**没有**真实云端推理或四个 Agent 的模型调用。详见 [VALIDATION.md](VALIDATION.md)。
 

@@ -8,4 +8,5 @@
 - Optional official TypeSafe proxy: `POST /v1/systemone` and `GET /v1/models` behind `official_invoke`.
 - Answer validation aligned with published TypeSafe primitive docs (Noul has no confidence; Score is the probability-weighted level).
 - Optional official TypeSafe skill install/uninstall per runtime (`npx skills`, confirm before write).
+- Product skill `skills/jev-workbench`: documents HTTP/MCP and requires agents to list local functions before invoke.
 - English default UI and English demo seed.

@@ -13,6 +13,8 @@ import {
   MoreHorizontal,
   Settings,
   History,
+  BookOpen,
+  Plug,
 } from "lucide-react";
 import { tr } from "./i18n";
 import { Button, Notice } from "./ui";
@@ -29,6 +31,9 @@ export function FunctionDirectory({
   retry,
   onSettings,
   onRuns,
+  onApi,
+  onConnections,
+  connectionsActive,
   port,
 }: any) {
   const [search, setSearch] = useState(""),
@@ -86,6 +91,7 @@ export function FunctionDirectory({
         <Button
           aria-label={tr("筛选函数")}
           aria-expanded={filters}
+          aria-pressed={filters}
           className={filters ? "filter-active" : ""}
           onClick={() => setFilters(!filters)}
         >
@@ -206,7 +212,17 @@ export function FunctionDirectory({
                           <span
                             className={
                               "directory-status " +
-                              (label === "已发布" ? "published" : "")
+                              (label === "已发布"
+                                ? "published"
+                                : label === "已删除"
+                                  ? "deleted"
+                                  : label === "草稿"
+                                    ? "draft"
+                                    : label === "已停用"
+                                      ? "disabled"
+                                      : label === "已归档"
+                                        ? "archived"
+                                        : "")
                             }
                           >
                             <IconState size={13} />
@@ -299,6 +315,17 @@ export function FunctionDirectory({
         })}
       </div>
       <div className="rail-bottom">
+        <Button
+          className={connectionsActive ? "nav-active" : ""}
+          onClick={onConnections}
+        >
+          <Plug size={16} />
+          {tr("调用与接入")}
+        </Button>
+        <Button onClick={onApi}>
+          <BookOpen size={16} />
+          {tr("接口文档")}
+        </Button>
         <Button onClick={onRuns}>
           <History size={16} />
           {tr("调用记录")}

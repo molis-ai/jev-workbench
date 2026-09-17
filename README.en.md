@@ -2,9 +2,14 @@
 
 [中文](README.md) · English
 
-Local judgment functions for TypeSafe’s Jev. Configure inputs, questions, review rules and outputs in the browser, publish an immutable version, then call the same engine over HTTP, MCP or Pi. The TypeSafe key stays on this machine. Callers use a restricted client token.
+Local one-stop judgment service for TypeSafe’s Jev. Configure functions in the browser once. After that, **the same published functions** serve:
 
-The official TypeSafe Python client can point at this workbench. The official TypeSafe agent skill is optional: install or skip it per runtime, like a cc-switch panel. Nothing is written to an agent until you confirm.
+- ordinary backends over HTTP (`/v1/functions/.../invoke`)
+- AI runtimes over MCP plus this repo’s **Jev Workbench skill** (list functions on this machine, then call them)
+
+The TypeSafe vendor key stays here. Callers use a client token or an MCP credential file. The official TypeSafe skill is optional and separate.
+
+Nothing is written to an agent until you confirm install in **Connections → Agents**.
 
 ![Workbench](docs/images/workbench.png)
 
@@ -89,17 +94,20 @@ The client token must have official Jev access. The TypeSafe vendor key never le
 
 ![Agents](docs/images/agents.png)
 
-Two independent actions in **Connections → Agents**:
+**Connections → Agents** is the one-stop installer. Three independent actions; none run until you confirm:
 
-1. **Workbench MCP / Pi** — install the local function tools. Plan, then apply. Only the `jev-workbench` entry is written.
-2. **TypeSafe skill (optional)** — install or remove the official [`typesafe-ai/skills`](https://github.com/typesafe-ai/skills) skill with `npx skills`. Skip it if you only need HTTP or MCP.
+1. **Workbench MCP / Pi** — local tools `jev_list_functions`, `jev_describe_function`, `jev_invoke`.
+2. **Jev Workbench skill** — [`skills/jev-workbench`](skills/jev-workbench/SKILL.md). Tells the agent to discover functions from this machine before invoking. Installs from the local repo path.
+3. **TypeSafe skill (optional)** — official [`typesafe-ai/skills`](https://github.com/typesafe-ai/skills) for designing TypeSafe questions. Not required to call this workbench.
 
-| Runtime | Workbench | Official skill |
-|---|---|---|
-| Claude Code | MCP stdio | `npx skills add typesafe-ai/skills --skill typesafe-ai --agent claude-code` |
-| Codex | MCP stdio | `--agent codex` |
-| OpenCode | MCP jsonc | `--agent opencode` |
-| Pi | native extension | copy `skills/typesafe-ai` manually |
+| Runtime | MCP / extension | Workbench skill | TypeSafe skill |
+|---|---|---|---|
+| Claude Code | MCP stdio | `--skill jev-workbench --agent claude-code` | `--skill typesafe-ai --agent claude-code` |
+| Codex | MCP stdio | `--agent codex` | `--agent codex` |
+| OpenCode | MCP jsonc | `--agent opencode` | `--agent opencode` |
+| Pi | native extension | copy `skills/jev-workbench` | copy `skills/typesafe-ai` |
+
+Typical path: publish a function → create a client token for HTTP services → install MCP + Workbench skill for the agent. Both paths hit the same version.
 
 Uninstall reverses only what this product installed. Other MCP servers and skills stay.
 

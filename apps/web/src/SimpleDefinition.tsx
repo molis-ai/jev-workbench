@@ -1,5 +1,4 @@
 import { tr } from "./i18n";
-import { Field, Button } from "./ui";
 export function SimpleDefinition({
   config: c,
   setConfig,
@@ -13,97 +12,117 @@ export function SimpleDefinition({
     setConfig(v);
   };
   return (
-    <div className="stack simple-definition">
-      <Field label={tr("函数名称")}>
+    <div className="config-sheet simple-definition">
+      <label className="config-row">
+        <div className="config-copy">
+          <strong>{tr("函数名称")}</strong>
+          <p>{tr("列表和调用方看到的名字。")}</p>
+        </div>
         <input
+          aria-label={tr("函数名称")}
           value={c.name}
           onChange={(e) => change((v) => (v.name = e.target.value))}
         />
-      </Field>
+      </label>
       {Object.entries(c.questions).map(([id, q]: [string, any]) => (
-        <section className="simple-question" key={id}>
-          <div className="row between">
-            <span className="primitive-tag">
-              {q.type[0].toUpperCase() + q.type.slice(1)}
-            </span>
-            {Object.keys(c.questions).length > 1 && <code>{id}</code>}
-            <small>
-              {tr(
-                q.type === "noul"
-                  ? "判断是否成立"
-                  : q.type === "choice"
-                    ? "从选项中分类"
-                    : "按有序档位评分",
-              )}
-            </small>
-          </div>
-          <Field label={tr("判断说明")}>
+        <section className="config-question" key={id}>
+          <div className="config-row">
+            <div className="config-copy">
+              <strong>{tr("判断说明")}</strong>
+              <p className="config-hint">
+                <span className={"primitive-tag type-" + q.type}>
+                  {q.type[0].toUpperCase() + q.type.slice(1)}
+                </span>
+                {Object.keys(c.questions).length > 1 && <code>{id}</code>}
+                <span>
+                  {tr(
+                    q.type === "noul"
+                      ? "判断是否成立"
+                      : q.type === "choice"
+                        ? "从选项中分类"
+                        : "按有序档位评分",
+                  )}
+                </span>
+              </p>
+            </div>
             <textarea
-              rows={2}
+              aria-label={tr("判断说明")}
+              rows={3}
               value={q.instructions}
               onChange={(e) =>
                 change((v) => (v.questions[id].instructions = e.target.value))
               }
             />
-          </Field>
+          </div>
           {q.type === "choice" && (
-            <div className="criteria-list">
-              <div className="criteria-label">
-                <span>{tr("稳定返回值")}</span>
-                <span>{tr("判断标准")}</span>
+            <div className="config-row config-row-stack">
+              <div className="config-copy">
+                <strong>{tr("判断标准")}</strong>
+                <p>{tr("左边是返回给调用方的值，右边是给模型的说明。")}</p>
               </div>
-              {Object.entries(q.criteria).map(([key, value]) => (
-                <label className="criterion" key={key}>
-                  <code>{key}</code>
-                  <input
-                    aria-label={tr("选项说明 ") + key}
-                    value={String(value ?? "")}
-                    onChange={(e) =>
-                      change(
-                        (v) => (v.questions[id].criteria[key] = e.target.value),
-                      )
-                    }
-                  />
-                </label>
-              ))}
-              <small>{tr("添加或删除选项，请展开高级配置。")}</small>
+              <div className="config-options">
+                {Object.entries(q.criteria).map(([key, value]) => (
+                  <label className="config-option" key={key}>
+                    <code>{key}</code>
+                    <input
+                      aria-label={tr("选项说明 ") + key}
+                      value={String(value ?? "")}
+                      onChange={(e) =>
+                        change(
+                          (v) =>
+                            (v.questions[id].criteria[key] = e.target.value),
+                        )
+                      }
+                    />
+                  </label>
+                ))}
+                <small>{tr("添加或删除选项，请展开高级配置。")}</small>
+              </div>
             </div>
           )}
           {q.type === "score" && (
-            <div className="criteria-list">
-              {q.criteria.map((value: string, i: number) => (
-                <label className="criterion" key={i}>
-                  <code>{i}</code>
-                  <input
-                    aria-label={tr("等级 {0}", i)}
-                    value={value}
-                    onChange={(e) =>
-                      change(
-                        (v) => (v.questions[id].criteria[i] = e.target.value),
-                      )
-                    }
-                  />
-                </label>
-              ))}
-              <small>{tr("等级按从低到高排列，返回从 0 开始的索引。")}</small>
+            <div className="config-row config-row-stack">
+              <div className="config-copy">
+                <strong>{tr("判断标准")}</strong>
+                <p>{tr("等级按从低到高排列，返回从 0 开始的索引。")}</p>
+              </div>
+              <div className="config-options">
+                {q.criteria.map((value: string, i: number) => (
+                  <label className="config-option" key={i}>
+                    <code>{i}</code>
+                    <input
+                      aria-label={tr("等级 {0}", i)}
+                      value={value}
+                      onChange={(e) =>
+                        change(
+                          (v) =>
+                            (v.questions[id].criteria[i] = e.target.value),
+                        )
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
             </div>
           )}
           {q.type === "noul" && (
-            <>
-              <Field label={tr("是的标准（可选）")}>
-                <textarea
-                  rows={1}
-                  value={q.criteria?.true ?? ""}
-                  onChange={(e) =>
-                    change((v) => {
-                      v.questions[id].criteria ??= {};
-                      v.questions[id].criteria.true = e.target.value;
-                    })
-                  }
-                />
-              </Field>
-              <small>{tr("Noul 返回是的概率，没有独立 confidence。")}</small>
-            </>
+            <div className="config-row">
+              <div className="config-copy">
+                <strong>{tr("是的标准（可选）")}</strong>
+                <p>{tr("Noul 返回是的概率，没有独立 confidence。")}</p>
+              </div>
+              <textarea
+                aria-label={tr("是的标准（可选）")}
+                rows={1}
+                value={q.criteria?.true ?? ""}
+                onChange={(e) =>
+                  change((v) => {
+                    v.questions[id].criteria ??= {};
+                    v.questions[id].criteria.true = e.target.value;
+                  })
+                }
+              />
+            </div>
           )}
         </section>
       ))}

@@ -19,6 +19,7 @@ import { Button, Drawer, Field, Notice, JsonEditor } from "./ui";
 import { FunctionEditor, discardDraft } from "./FunctionEditor";
 import { FunctionDirectory } from "./FunctionDirectory";
 import { Connections } from "./Connections";
+import { ApiReference } from "./ApiReference";
 import englishTemplate from "../../../examples/ticket_route.en.v1.json";
 import template from "../../../examples/ticket_route.v1.json";
 import "./style.css";
@@ -82,7 +83,7 @@ function Workspace() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [pendingDelete, setPendingDelete] = useState<any>(null),
-    [connectionsOpen, setConnectionsOpen] = useState(false);
+    [view, setView] = useState<"editor" | "connections">("editor");
   const status = useQuery({
     queryKey: ["status"],
     queryFn: () => api("/status"),
@@ -103,7 +104,6 @@ function Workspace() {
       "",
       id ? "/?function=" + encodeURIComponent(id) : "/",
     );
-    setConnectionsOpen(false);
   }, [id]);
   async function update(f: any, body: any) {
     setBusy(true);
@@ -183,7 +183,10 @@ function Workspace() {
       <FunctionDirectory
         functions={functions}
         selectedId={id}
-        onSelect={setId}
+        onSelect={(next: string) => {
+          setId(next);
+          setView("editor");
+        }}
         onNew={() => setDrawer("create")}
         onUpdate={update}
         onDelete={setPendingDelete}
@@ -193,17 +196,33 @@ function Workspace() {
         retry={() => list.refetch()}
         onSettings={() => setDrawer("settings")}
         onRuns={() => setDrawer("runs")}
+        onApi={() => setDrawer("api")}
+        onConnections={() => setView("connections")}
+        connectionsActive={view === "connections"}
         port={status.data?.port}
       />
       <div className="workspace">
         <header className="topbar">
-          <span>{tr("本地判断函数")}</span>
+          <span>
+            {view === "connections"
+              ? tr("调用与接入")
+              : tr("本地判断函数")}
+          </span>
           <div className="row">
             <button
               aria-label="Language / 语言"
               onClick={() => setLanguage(getLanguage() === "en" ? "zh" : "en")}
             >
               {getLanguage() === "en" ? "中文" : "English"}
+            </button>
+            <button
+              className="topbar-connect"
+              onClick={() => setView("connections")}
+            >
+              {tr("调用与接入")}
+            </button>
+            <button className="topbar-api" onClick={() => setDrawer("api")}>
+              {tr("接口文档")}
             </button>
             <button onClick={() => setDrawer("settings")}>
               {status.data?.demo_mode
@@ -219,7 +238,7 @@ function Workspace() {
           {status.data?.demo_mode && (
             <div className="mode-note">
               {tr(
-                "离线演示 · 所有答案均为模拟，不发送网络请求、不产生费用。输入「不清楚」触发复核，「模拟错误」或「模拟超时」体验失败。",
+                "离线演示 · 所有答案均为模拟，不访问网络、不计费。输入 unclear 或「不清楚」会复核，simulate error / 「模拟错误」会失败。",
               )}
             </div>
           )}
@@ -229,7 +248,14 @@ function Workspace() {
             </div>
           )}
           {error && <Notice error>{error}</Notice>}
-          {id && selected?.deleted_at ? (
+          {view === "connections" ? (
+            <div className="connections-page">
+              <Connections
+                functions={functions}
+                initialFunction={selected}
+              />
+            </div>
+          ) : id && selected?.deleted_at ? (
             <div className="trash-detail">
               <Trash2 size={30} />
               <h1>{selected.display_name}</h1>
@@ -265,23 +291,6 @@ function Workspace() {
                 id={id}
                 onUpdated={() => list.refetch()}
               />
-              <details
-                className="inline-connect"
-                open={connectionsOpen}
-                onToggle={(e) => setConnectionsOpen(e.currentTarget.open)}
-              >
-                <summary>
-                  {tr("调用与接入")}
-                  <span>{tr("HTTP、MCP 与 Pi，在这里授权和测试")}</span>
-                </summary>
-                {connectionsOpen && (
-                  <Connections
-                    key={id}
-                    functions={functions}
-                    initialFunction={selected}
-                  />
-                )}
-              </details>
             </div>
           ) : (
             <div className="empty">
@@ -351,6 +360,13 @@ function Workspace() {
         title={tr("调用记录")}
       >
         {drawer === "runs" && <Runs />}
+      </Drawer>
+      <Drawer
+        open={drawer === "api"}
+        onClose={() => setDrawer("")}
+        title={tr("接口文档")}
+      >
+        <ApiReference origin={location.origin} />
       </Drawer>
     </div>
   );

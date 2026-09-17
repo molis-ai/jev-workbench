@@ -61,6 +61,17 @@ export function openDatabase(home: string) {
       db.prepare("INSERT INTO schema_migrations VALUES(4,?)").run(now());
     })();
   }
+  if (!db.prepare("SELECT 1 FROM schema_migrations WHERE version=5").get()) {
+    db.transaction(() => {
+      db.exec(
+        readFileSync(
+          join(process.cwd(), "migrations/005_skill_name.sql"),
+          "utf8",
+        ),
+      );
+      db.prepare("INSERT INTO schema_migrations VALUES(5,?)").run(now());
+    })();
+  }
   db.prepare(
     "UPDATE runs SET execution_status='interrupted',finished_at=? WHERE execution_status='running'",
   ).run(now());
