@@ -1,0 +1,80 @@
+{
+  "format_version": 1,
+  "key": "ticket_route",
+  "name": "Ticket routing",
+  "description": "Route a support ticket to the responsible department; request review when information is insufficient.",
+  "when_to_use": "Call when a support ticket needs a responsible department. Do not use for automatic refunds or other actions with side effects.",
+  "provider": "typesafe",
+  "model": "jev-1.13.0",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "content": {
+        "type": "string",
+        "description": "Ticket content",
+        "minLength": 1,
+        "maxLength": 12000
+      }
+    },
+    "required": [
+      "content"
+    ],
+    "additionalProperties": false
+  },
+  "state_mapping": {
+    "ticket_text": "/content"
+  },
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "Use only ticket_text in state to select the responsible department. Choose other when the information is insufficient or none of the departments apply.",
+      "criteria": {
+        "billing": "Duplicate charges, payments, bills or refund requests",
+        "technical": "Product failures, errors or API integration issues",
+        "sales": "Purchase inquiries, plans or business partnerships",
+        "other": "Other issues, or insufficient information"
+      }
+    }
+  },
+  "review": {
+    "match": "any",
+    "rules": [
+      {
+        "id": "low_confidence",
+        "source": "/answers/department/confidence",
+        "operator": "lt",
+        "value": 0.8
+      },
+      {
+        "id": "unclassified",
+        "source": "/answers/department/choice",
+        "operator": "eq",
+        "value": "other"
+      }
+    ]
+  },
+  "output_mapping": {
+    "department": {
+      "source": "/answers/department/choice",
+      "on_review": null
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "department": {
+        "enum": [
+          "billing",
+          "technical",
+          "sales",
+          "other",
+          null
+        ]
+      }
+    },
+    "required": [
+      "department"
+    ],
+    "additionalProperties": false
+  }
+}

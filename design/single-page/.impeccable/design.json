@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-18T00:00:00+08:00",
+  "title": "Design System: Jev Single-page Prototype",
+  "extensions": {
+    "shadows": [
+      { "name": "control", "value": "0 1px 2px #0000000a", "purpose": "Shallow lower edge on standard buttons." },
+      { "name": "selected-primitive", "value": "0 1px 3px #0000000a", "purpose": "Lift the selected primitive inside its neutral tray." },
+      { "name": "primary-control", "value": "inset 0 1px 0 #ffffff20,0 1px 2px #00000014", "purpose": "Dark test button highlight and lower edge." },
+      { "name": "toast", "value": "0 4px 15px #0002", "purpose": "Temporary local-save/copy feedback." }
+    ],
+    "motion": [
+      { "name": "disclosure", "value": "transform .18s", "purpose": "Rotate disclosure chevrons 90 degrees; disabled for reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "stacked", "value": "600px" },
+      { "name": "compact", "value": "800px" },
+      { "name": "wide", "value": "1450px" }
+    ]
+  },
+  "components": [],
+  "narrative": {
+    "overview": "Standalone bilingual Coss UI-inspired prototype. Neutral surfaces, thin rules and shallow shadows support a single configuration-to-test flow. This scoped design document does not replace the incumbent production design system.",
+    "keyCharacteristics": ["No sidebar or route navigation", "Three continuously visible primitives", "Configuration/test split with mobile stacking", "Inline advanced settings and connection preview"],
+    "rules": [
+      { "name": "Visible state", "body": "Keep example, simulation, stale, review and error states legible; probability is not accuracy.", "section": "components" }
+    ],
+    "dos": ["Keep all three primitives discoverable.", "Preserve bilingual layout and keyboard focus.", "Label offline simulation and release previews."],
+    "donts": ["Do not add a sidebar to this prototype.", "Do not claim real inference, publishing or production integration from the draft."]
+  }
+}

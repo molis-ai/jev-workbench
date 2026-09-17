@@ -1,0 +1,1 @@
+{"name":"jev-workbench-pi","version":"0.1.0","private":true,"type":"module","pi":{"extensions":["./index.ts"]},"dependencies":{"@sinclair/typebox":"^0.34.41"}}

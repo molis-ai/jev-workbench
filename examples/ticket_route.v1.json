@@ -1,0 +1,46 @@
+{
+  "format_version": 1,
+  "key": "ticket_route",
+  "name": "工单分流",
+  "description": "根据工单内容判断负责部门；材料不足时要求复核。",
+  "when_to_use": "当需要根据一条工单内容选择负责部门时调用。不要用于自动退款或其他有副作用的操作。",
+  "provider": "typesafe",
+  "model": "jev-1.13.0",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "content": {"type": "string", "description": "工单正文", "minLength": 1, "maxLength": 12000}
+    },
+    "required": ["content"],
+    "additionalProperties": false
+  },
+  "state_mapping": {"ticket_text": "/content"},
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "仅根据 state 中的 ticket_text 判断该工单应由哪个部门负责。材料不足或不属于给定部门时选择 other。",
+      "criteria": {
+        "billing": "重复扣款、付款、账单或退款咨询",
+        "technical": "产品故障、报错或接口集成问题",
+        "sales": "购买咨询、套餐或商务合作",
+        "other": "其他问题，或者信息不足以判断"
+      }
+    }
+  },
+  "review": {
+    "match": "any",
+    "rules": [
+      {"id": "low_confidence", "source": "/answers/department/confidence", "operator": "lt", "value": 0.8},
+      {"id": "unclassified", "source": "/answers/department/choice", "operator": "eq", "value": "other"}
+    ]
+  },
+  "output_mapping": {
+    "department": {"source": "/answers/department/choice", "on_review": null}
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {"department": {"enum": ["billing", "technical", "sales", "other", null]}},
+    "required": ["department"],
+    "additionalProperties": false
+  }
+}

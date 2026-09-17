@@ -1,0 +1,333 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-17T17:31:14.629066+00:00",
+  "title": "Design System: Jev Workbench",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "primary",
+        "tonalRamp": [
+          "oklch(15.00% 0.1816 269.19)",
+          "oklch(26.43% 0.1816 269.19)",
+          "oklch(37.86% 0.1816 269.19)",
+          "oklch(49.29% 0.1816 269.19)",
+          "oklch(60.71% 0.1816 269.19)",
+          "oklch(72.14% 0.1816 269.19)",
+          "oklch(83.57% 0.1816 269.19)",
+          "oklch(95.00% 0.1816 269.19)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "primary-hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.1765 269.09)",
+          "oklch(26.43% 0.1765 269.09)",
+          "oklch(37.86% 0.1765 269.09)",
+          "oklch(49.29% 0.1765 269.09)",
+          "oklch(60.71% 0.1765 269.09)",
+          "oklch(72.14% 0.1765 269.09)",
+          "oklch(83.57% 0.1765 269.09)",
+          "oklch(95.00% 0.1765 269.09)"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "canvas",
+        "tonalRamp": [
+          "oklch(15.00% 0.0029 264.54)",
+          "oklch(26.43% 0.0029 264.54)",
+          "oklch(37.86% 0.0029 264.54)",
+          "oklch(49.29% 0.0029 264.54)",
+          "oklch(60.71% 0.0029 264.54)",
+          "oklch(72.14% 0.0029 264.54)",
+          "oklch(83.57% 0.0029 264.54)",
+          "oklch(95.00% 0.0029 264.54)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.0000 89.88)",
+          "oklch(26.43% 0.0000 89.88)",
+          "oklch(37.86% 0.0000 89.88)",
+          "oklch(49.29% 0.0000 89.88)",
+          "oklch(60.71% 0.0000 89.88)",
+          "oklch(72.14% 0.0000 89.88)",
+          "oklch(83.57% 0.0000 89.88)",
+          "oklch(95.00% 0.0000 89.88)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "sidebar",
+        "tonalRamp": [
+          "oklch(15.00% 0.0045 258.32)",
+          "oklch(26.43% 0.0045 258.32)",
+          "oklch(37.86% 0.0045 258.32)",
+          "oklch(49.29% 0.0045 258.32)",
+          "oklch(60.71% 0.0045 258.32)",
+          "oklch(72.14% 0.0045 258.32)",
+          "oklch(83.57% 0.0045 258.32)",
+          "oklch(95.00% 0.0045 258.32)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "text",
+        "tonalRamp": [
+          "oklch(15.00% 0.0167 259.78)",
+          "oklch(26.43% 0.0167 259.78)",
+          "oklch(37.86% 0.0167 259.78)",
+          "oklch(49.29% 0.0167 259.78)",
+          "oklch(60.71% 0.0167 259.78)",
+          "oklch(72.14% 0.0167 259.78)",
+          "oklch(83.57% 0.0167 259.78)",
+          "oklch(95.00% 0.0167 259.78)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.0276 256.18)",
+          "oklch(26.43% 0.0276 256.18)",
+          "oklch(37.86% 0.0276 256.18)",
+          "oklch(49.29% 0.0276 256.18)",
+          "oklch(60.71% 0.0276 256.18)",
+          "oklch(72.14% 0.0276 256.18)",
+          "oklch(83.57% 0.0276 256.18)",
+          "oklch(95.00% 0.0276 256.18)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "border",
+        "tonalRamp": [
+          "oklch(15.00% 0.0092 258.34)",
+          "oklch(26.43% 0.0092 258.34)",
+          "oklch(37.86% 0.0092 258.34)",
+          "oklch(49.29% 0.0092 258.34)",
+          "oklch(60.71% 0.0092 258.34)",
+          "oklch(72.14% 0.0092 258.34)",
+          "oklch(83.57% 0.0092 258.34)",
+          "oklch(95.00% 0.0092 258.34)"
+        ]
+      },
+      "success": {
+        "role": "status",
+        "displayName": "success",
+        "tonalRamp": [
+          "oklch(15.00% 0.0936 157.55)",
+          "oklch(26.43% 0.0936 157.55)",
+          "oklch(37.86% 0.0936 157.55)",
+          "oklch(49.29% 0.0936 157.55)",
+          "oklch(60.71% 0.0936 157.55)",
+          "oklch(72.14% 0.0936 157.55)",
+          "oklch(83.57% 0.0936 157.55)",
+          "oklch(95.00% 0.0936 157.55)"
+        ]
+      },
+      "success-bg": {
+        "role": "status",
+        "displayName": "success-bg",
+        "tonalRamp": [
+          "oklch(15.00% 0.0134 167.17)",
+          "oklch(26.43% 0.0134 167.17)",
+          "oklch(37.86% 0.0134 167.17)",
+          "oklch(49.29% 0.0134 167.17)",
+          "oklch(60.71% 0.0134 167.17)",
+          "oklch(72.14% 0.0134 167.17)",
+          "oklch(83.57% 0.0134 167.17)",
+          "oklch(95.00% 0.0134 167.17)"
+        ]
+      },
+      "review": {
+        "role": "status",
+        "displayName": "review",
+        "tonalRamp": [
+          "oklch(15.00% 0.0992 76.36)",
+          "oklch(26.43% 0.0992 76.36)",
+          "oklch(37.86% 0.0992 76.36)",
+          "oklch(49.29% 0.0992 76.36)",
+          "oklch(60.71% 0.0992 76.36)",
+          "oklch(72.14% 0.0992 76.36)",
+          "oklch(83.57% 0.0992 76.36)",
+          "oklch(95.00% 0.0992 76.36)"
+        ]
+      },
+      "review-bg": {
+        "role": "status",
+        "displayName": "review-bg",
+        "tonalRamp": [
+          "oklch(15.00% 0.0349 81.28)",
+          "oklch(26.43% 0.0349 81.28)",
+          "oklch(37.86% 0.0349 81.28)",
+          "oklch(49.29% 0.0349 81.28)",
+          "oklch(60.71% 0.0349 81.28)",
+          "oklch(72.14% 0.0349 81.28)",
+          "oklch(83.57% 0.0349 81.28)",
+          "oklch(95.00% 0.0349 81.28)"
+        ]
+      },
+      "error": {
+        "role": "status",
+        "displayName": "error",
+        "tonalRamp": [
+          "oklch(15.00% 0.1521 24.61)",
+          "oklch(26.43% 0.1521 24.61)",
+          "oklch(37.86% 0.1521 24.61)",
+          "oklch(49.29% 0.1521 24.61)",
+          "oklch(60.71% 0.1521 24.61)",
+          "oklch(72.14% 0.1521 24.61)",
+          "oklch(83.57% 0.1521 24.61)",
+          "oklch(95.00% 0.1521 24.61)"
+        ]
+      },
+      "error-bg": {
+        "role": "status",
+        "displayName": "error-bg",
+        "tonalRamp": [
+          "oklch(15.00% 0.0118 17.36)",
+          "oklch(26.43% 0.0118 17.36)",
+          "oklch(37.86% 0.0118 17.36)",
+          "oklch(49.29% 0.0118 17.36)",
+          "oklch(60.71% 0.0118 17.36)",
+          "oklch(72.14% 0.0118 17.36)",
+          "oklch(83.57% 0.0118 17.36)",
+          "oklch(95.00% 0.0118 17.36)"
+        ]
+      }
+    },
+    "shadows": [
+      {
+        "name": "drawer",
+        "value": "-8px 0 32px #1d2a421f",
+        "purpose": "右侧抽屉；常规面板无阴影。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "control",
+        "value": "background-color 0.12s ease",
+        "purpose": "按钮与选择框。"
+      },
+      {
+        "name": "drawer",
+        "value": "drawer-in 0.18s ease-out",
+        "purpose": "从 translateX(24px), opacity .7 到 translateX(0), opacity 1；减少动态效果时关闭动画与过渡。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "desktop-editor",
+        "value": "1280px"
+      },
+      {
+        "name": "icon-sidebar",
+        "value": "900px"
+      },
+      {
+        "name": "readable-mobile",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "description": "主次与危险操作保持相同紧凑形状。",
+      "html": "<button class=\"ds-primary\">保存草稿</button>",
+      "css": ".ds-primary{font:500 13px -apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",sans-serif;border:1px solid #d7dce6;border-radius:6px;padding:9px 13px;min-height:38px;cursor:pointer;transition:background-color .12s ease;background:var(--primary,#405bcf);color:#fff;}.ds-primary:hover:not(:disabled){background:#344cbb}.ds-primary:focus-visible{outline:2px solid var(--primary,#405bcf);outline-offset:3px}.ds-primary:disabled{opacity:.5;cursor:not-allowed}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "description": "主次与危险操作保持相同紧凑形状。",
+      "html": "<button class=\"ds-secondary\">保存草稿</button>",
+      "css": ".ds-secondary{font:500 13px -apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",sans-serif;border:1px solid #d7dce6;border-radius:6px;padding:9px 13px;min-height:38px;cursor:pointer;transition:background-color .12s ease;background:#fff;color:#20252d;}.ds-secondary:hover:not(:disabled){background:#edf0f8}.ds-secondary:focus-visible{outline:2px solid var(--primary,#405bcf);outline-offset:3px}.ds-secondary:disabled{opacity:.5;cursor:not-allowed}",
+      "refersTo": "button-secondary"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "description": "主次与危险操作保持相同紧凑形状。",
+      "html": "<button class=\"ds-danger\">撤销</button>",
+      "css": ".ds-danger{font:500 13px -apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",sans-serif;border:1px solid #d7dce6;border-radius:6px;padding:9px 13px;min-height:38px;cursor:pointer;transition:background-color .12s ease;background:#fff;color:#b33333;}.ds-danger:hover:not(:disabled){background:#edf0f8}.ds-danger:focus-visible{outline:2px solid var(--primary,#405bcf);outline-offset:3px}.ds-danger:disabled{opacity:.5;cursor:not-allowed}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "description": "",
+      "html": "<label class=\"ds-field\">函数名称<input placeholder=\"填写名称\" /></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:8px;font:13px sans-serif;color:#20252d}.ds-field input{font:14px sans-serif;padding:9px 11px;min-height:38px;border:1px solid #d5dce6;border-radius:6px;background:#fff;color:#20252d}.ds-field input:hover{border-color:#b3bdcd}.ds-field input:focus-visible{outline:2px solid var(--primary,#405bcf);outline-offset:3px}",
+      "refersTo": "input"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "description": "",
+      "html": "<nav class=\"ds-nav\"><button aria-current=\"page\">判断函数</button><button>调用与接入</button></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:6px;background:#f3f5f8;padding:16px}.ds-nav button{font:14px sans-serif;border:0;background:transparent;border-radius:6px;padding:12px;color:var(--muted,#596473);text-align:left;cursor:pointer}.ds-nav button[aria-current]{background:#e5eafb;color:#344ebc;font-weight:600}.ds-nav button:hover{background:#edf0f8}.ds-nav button:focus-visible{outline:2px solid var(--primary,#405bcf);outline-offset:3px}"
+    },
+    {
+      "name": "Status Badges",
+      "kind": "chip",
+      "description": "",
+      "html": "<div class=\"ds-badges\"><span>未发布</span><span class=\"ds-success\">判断完成</span><span class=\"ds-review\">需要复核</span></div>",
+      "css": ".ds-badges{display:flex;gap:8px;flex-wrap:wrap}.ds-badges span{font:12px sans-serif;padding:3px 7px;border-radius:4px;background:#eef0f4;color:#596473;white-space:nowrap}.ds-badges .ds-success{background:#e9f4ef;color:#28704b}.ds-badges .ds-review{background:#fff1d9;color:#896018}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "description": "",
+      "html": "<section class=\"ds-panel\"><h2>试跑</h2><div>填入样例开始试跑</div></section>",
+      "css": ".ds-panel{background:#fff;border:1px solid var(--border,#e2e6ec);border-radius:8px;overflow:hidden;color:#20252d}.ds-panel h2{font:650 17px sans-serif;padding:19px 24px;margin:0;border-bottom:1px solid var(--border,#e2e6ec)}.ds-panel div{font:14px sans-serif;padding:24px}",
+      "refersTo": "panel"
+    },
+    {
+      "name": "Notice",
+      "kind": "custom",
+      "description": "",
+      "html": "<div class=\"ds-notice\" role=\"status\">离线演示 · 所有答案均为模拟，不发送网络请求、不产生费用。</div>",
+      "css": ".ds-notice{font:13px/1.7 sans-serif;padding:12px 16px;border:1px solid #d8e0f3;border-radius:6px;background:#f1f4fb;color:#455579;overflow-wrap:anywhere}"
+    },
+    {
+      "name": "Grant Choice",
+      "kind": "custom",
+      "description": "",
+      "html": "<div class=\"ds-grant\"><label><input type=\"checkbox\" /> 工单分流</label><code>ticket_routing</code><select aria-label=\"固定版本\"><option>v1</option></select></div>",
+      "css": ".ds-grant{display:flex;align-items:center;flex-wrap:wrap;gap:10px;color:#20252d;font:13px sans-serif}.ds-grant label{display:flex;gap:8px;align-items:center;white-space:nowrap;flex:none}.ds-grant input{width:16px;height:16px;accent-color:var(--primary,#405bcf)}.ds-grant code{min-width:0;overflow-wrap:anywhere;font:12px ui-monospace,monospace}.ds-grant select{font:14px sans-serif;padding:9px 11px;border:1px solid #d5dce6;border-radius:6px;background:#fff;max-width:100%}.ds-grant select:hover{background:#edf0f8}.ds-grant select:focus-visible{outline:2px solid var(--primary,#405bcf);outline-offset:3px}.ds-grant input:focus-visible{outline:2px solid var(--primary,#405bcf);outline-offset:3px}@media(max-width:600px){.ds-grant{display:grid;grid-template-columns:minmax(0,1fr)}.ds-grant select{width:100%}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "安静的操作工作台 / Operate",
+    "overview": "延续既有浅色操作界面，不引入新的品牌世界。空间服务于输入、判断配置、试跑和接入；视觉重点落在当前动作与可验证状态。以系统中文字体、低对比背景、白色面板和克制的蓝色建立层次。\n\n本文是当前实现的视觉记录；产品行为和验收范围仍以 `specs/v1/spec.md` 第 12 节及末尾演示授权为准。当前 CSS 的具体实现值记录在此，不把实现与合同之间的差异解释为新授权。",
+    "keyCharacteristics": [
+      "两个主导航，设置与记录作为次级入口。",
+      "桌面编辑优先，试跑输入与结果保持完整分组。",
+      "状态用文字和颜色共同表达；演示数据始终明确标识。"
+    ],
+    "rules": [
+      {
+        "name": "The Visible State Rule",
+        "body": "状态必须有明确文字；不能只靠颜色、圆点或图标证明成功、连接或发布。",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** 延续浅色 Operate 工作台和现有信息密度。",
+      "**Do** 在响应布局中保持完整输入组、结果组及授权字段关联。",
+      "**Do** 明确呈现旧配置、未发布、复核、错误和模拟状态。"
+    ],
+    "donts": [
+      "**Don't** 加入 KPI 首页、虚构用量或伪造的精确成功率。",
+      "**Don't** 使用大面积渐变、玻璃效果、营销插画或跳动指标。",
+      "**Don't** 把手机可读、模拟成功或连接配置存在写成完整编辑、真实推理或运行端已连接的证明。"
+    ]
+  }
+}

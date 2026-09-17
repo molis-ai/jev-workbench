@@ -1,0 +1,61 @@
+{
+  "name": "jev-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "start": "node dist/server/main.js",
+    "jev": "node dist/server/cli.js",
+    "dev": "tsx apps/server/src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "demo": "node scripts/demo.mjs",
+    "format": "prettier --write apps packages scripts tests *.ts",
+    "demo:call": "node scripts/demo-call.mjs"
+  },
+  "dependencies": {
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/view": "^6.38.0",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/static": "^8.3.0",
+    "@iarna/toml": "2.2.5",
+    "@modelcontextprotocol/sdk": "^1.25.0",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@sinclair/typebox": "^0.34.41",
+    "@tanstack/react-query": "^5.90.0",
+    "ajv": "^8.17.1",
+    "better-sqlite3": "^12.4.1",
+    "clsx": "^2.1.1",
+    "codemirror": "^6.0.2",
+    "fastify": "^5.6.0",
+    "jsonc-parser": "^3.3.1",
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.65.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@tailwindcss/vite": "^4.1.16",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "esbuild": "^0.25.12",
+    "prettier": "3.6.2",
+    "tailwindcss": "^4.1.16",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.0",
+    "vitest": "^3.2.4"
+  }
+}
