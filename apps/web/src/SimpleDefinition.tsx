@@ -39,7 +39,7 @@ export function SimpleDefinition({
           </div>
           <Field label={tr("判断说明")}>
             <textarea
-              rows={4}
+              rows={2}
               value={q.instructions}
               onChange={(e) =>
                 change((v) => (v.questions[id].instructions = e.target.value))
@@ -92,7 +92,7 @@ export function SimpleDefinition({
             <>
               <Field label={tr("是的标准（可选）")}>
                 <textarea
-                  rows={2}
+                  rows={1}
                   value={q.criteria?.true ?? ""}
                   onChange={(e) =>
                     change((v) => {

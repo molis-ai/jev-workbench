@@ -39,12 +39,13 @@ export class TypeSafeProvider implements Provider {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         onAttempt();
+        const headers: Record<string, string> = {
+          Authorization: "Bearer " + key,
+        };
+        if (body) headers["Content-Type"] = "application/json";
         const r = await this.transport("https://api.typesafe.ai" + path, {
           method: body ? "POST" : "GET",
-          headers: {
-            Authorization: `Bearer ${key}`,
-            "Content-Type": "application/json",
-          },
+          headers,
           body: body ? JSON.stringify(body) : undefined,
           signal,
         });

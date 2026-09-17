@@ -9,11 +9,12 @@ export class Clients {
     return (
       this.db
         .prepare(
-          "SELECT id,name,kind,token_prefix,created_at,revoked_at,last_seen_at FROM clients ORDER BY created_at DESC",
+          "SELECT id,name,kind,token_prefix,official_invoke,created_at,revoked_at,last_seen_at FROM clients ORDER BY created_at DESC",
         )
         .all() as any[]
     ).map((c) => ({
       ...c,
+      official_invoke: !!c.official_invoke,
       grants: this.db
         .prepare(
           "SELECT function_id,pinned_version,function_key FROM client_grants JOIN functions ON functions.id=function_id WHERE client_id=?",
@@ -45,21 +46,41 @@ export class Clients {
         .prepare("INSERT INTO client_grants VALUES(?,?,?)")
         .run(id, g.function_id, g.pinned_version);
   }
-  create(name: string, kind: string, grants: Grant[]) {
+  create(
+    name: string,
+    kind: string,
+    grants: Grant[],
+    officialInvoke = false,
+  ) {
     return this.db.transaction(() => {
       const t = token(),
         id = randomUUID();
       this.db
         .prepare(
-          "INSERT INTO clients(id,name,kind,token_hash,token_prefix,created_at) VALUES(?,?,?,?,?,?)",
+          "INSERT INTO clients(id,name,kind,token_hash,token_prefix,created_at,official_invoke) VALUES(?,?,?,?,?,?,?)",
         )
-        .run(id, name, kind, hash(t), t.slice(0, 8), now());
+        .run(
+          id,
+          name,
+          kind,
+          hash(t),
+          t.slice(0, 8),
+          now(),
+          Number(officialInvoke),
+        );
       this.grant(id, grants);
-      audit(this.db, "create", "client", id);
+      audit(this.db, "create", "client", id, {
+        official_invoke: !!officialInvoke,
+      });
       return { id, token: t };
     })();
   }
-  update(id: string, name: string, grants: Grant[]) {
+  update(
+    id: string,
+    name: string,
+    grants: Grant[],
+    officialInvoke?: boolean,
+  ) {
     return this.db.transaction(() => {
       if (
         !this.db
@@ -68,10 +89,31 @@ export class Clients {
       )
         fail(404, "CLIENT_NOT_FOUND", "客户端不存在或已撤销");
       this.grant(id, grants);
-      this.db.prepare("UPDATE clients SET name=? WHERE id=?").run(name, id);
-      audit(this.db, "update", "client", id);
+      this.db
+        .prepare(
+          officialInvoke === undefined
+            ? "UPDATE clients SET name=? WHERE id=?"
+            : "UPDATE clients SET name=?,official_invoke=? WHERE id=?",
+        )
+        .run(
+          ...(officialInvoke === undefined
+            ? [name, id]
+            : [name, Number(officialInvoke), id]),
+        );
+      audit(this.db, "update", "client", id, {
+        official_invoke: officialInvoke,
+      });
       return { ok: true };
     })();
+  }
+  requireOfficial(client: any) {
+    if (!client.official_invoke)
+      fail(
+        403,
+        "OFFICIAL_INVOKE_FORBIDDEN",
+        "当前凭证未授权官方 Jev 调用。请在创建或编辑客户端时勾选该能力。",
+      );
+    return client;
   }
   revoke(id: string) {
     this.db
@@ -84,14 +126,14 @@ export class Clients {
     const t = auth?.startsWith("Bearer ") ? auth.slice(7) : "";
     const c = this.db
       .prepare(
-        "SELECT id,kind FROM clients WHERE token_hash=? AND revoked_at IS NULL",
+        "SELECT id,kind,official_invoke FROM clients WHERE token_hash=? AND revoked_at IS NULL",
       )
       .get(hash(t)) as any;
     if (!c) fail(401, "INVALID_CLIENT_TOKEN", "调用凭证缺失、无效或已撤销");
     this.db
       .prepare("UPDATE clients SET last_seen_at=? WHERE id=?")
       .run(now(), c.id);
-    return c;
+    return { ...c, official_invoke: !!c.official_invoke };
   }
   resolve(client: any, key: string, version?: number) {
     const g = this.db

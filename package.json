@@ -2,6 +2,12 @@
   "name": "jev-workbench",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "description": "Local workbench for publishing immutable Jev judgment functions and optionally proxying the official TypeSafe API.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/molis-ai/jev-workbench.git"
+  },
   "type": "module",
   "packageManager": "pnpm@11.9.0",
   "engines": {
@@ -31,7 +37,6 @@
     "@tanstack/react-query": "^5.90.0",
     "ajv": "^8.17.1",
     "better-sqlite3": "^12.4.1",
-    "clsx": "^2.1.1",
     "codemirror": "^6.0.2",
     "fastify": "^5.6.0",
     "jsonc-parser": "^3.3.1",
@@ -39,7 +44,6 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.65.0",
-    "tailwind-merge": "^3.3.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {

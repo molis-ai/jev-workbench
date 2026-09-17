@@ -604,11 +604,11 @@ td small {
   padding: 2px;
 }
 .result-empty {
-  padding: 24px 12px;
+  padding: 12px 10px;
   text-align: center;
   color: var(--muted);
   background: #fafbfc;
-  line-height: 1.9;
+  line-height: 1.5;
   border-radius: 6px;
 }
 .overlay {
@@ -1502,28 +1502,23 @@ select {
     width: 250px;
   }
   .master-detail .content {
-    padding: 24px;
-  }
-  .master-detail .editor-grid {
-    grid-template-columns: 1fr;
-  }
-  .master-detail .editor-grid > .playground {
-    border-left: 0;
-    border-top: 1px solid var(--border);
+    padding: 8px 16px 10px;
   }
   .editor-heading {
     flex-wrap: wrap;
   }
-  .master-detail .playground .playground-body {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-  .master-detail .playground-result {
-    border-top: 0;
-    padding-top: 0;
-  }
   .master-detail .page-heading > .row {
     justify-content: flex-start;
+  }
+  .master-detail .playground-input textarea,
+  .master-detail .simple-definition textarea {
+    height: 3.3em;
+  }
+  .master-detail .answer-value {
+    font-size: 18px;
+  }
+  .master-detail .inline-connect {
+    padding: 6px 12px;
   }
 }
 @media (max-width: 700px) {
@@ -1638,6 +1633,22 @@ select {
 @media (max-width: 700px) {
   .master-detail .playground .playground-body {
     align-items: stretch;
+  }
+  .master-detail.shell,
+  .master-detail .workspace,
+  .master-detail .content,
+  .detail-screen,
+  .editor-screen {
+    height: auto;
+    overflow: visible;
+  }
+  .master-detail .editor-grid,
+  .master-detail .editor-grid > .panel,
+  .master-detail .panel-body,
+  .master-detail .playground .playground-body {
+    min-height: 0;
+    overflow: visible;
+    height: auto;
   }
 }
 /* Compact grouped directory, based on the user's list reference. */
@@ -1901,5 +1912,212 @@ select {
   }
   .trash-detail {
     padding: 25px 18px;
+  }
+}
+/* Right pane fits one desktop screen; no page scroll. */
+.master-detail.shell {
+  height: 100vh;
+  overflow: hidden;
+}
+.master-detail .workspace {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+.master-detail .topbar {
+  flex: none;
+  height: 48px;
+  padding: 0 22px;
+}
+.master-detail .content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 10px 20px 12px;
+  max-width: none;
+  width: 100%;
+}
+.master-detail .mode-note {
+  flex: none;
+  margin-bottom: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.master-detail .notice {
+  margin-bottom: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.detail-screen,
+.editor-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+.master-detail .editor-heading {
+  flex: none;
+  margin-bottom: 0;
+  gap: 10px;
+}
+.master-detail .editor-heading h1 {
+  font-size: 18px;
+}
+.master-detail .editor-heading p {
+  margin-top: 4px;
+  font-size: 11px;
+}
+.master-detail .editor-heading > .row .button {
+  min-height: 32px;
+  padding: 5px 9px;
+}
+.master-detail .editor-grid {
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+}
+.master-detail .editor-grid > .panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.master-detail .panel-title {
+  flex: none;
+  padding: 10px 16px;
+}
+.master-detail .panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 16px 12px;
+}
+.master-detail .simple-definition.stack,
+.master-detail .playground-input,
+.master-detail .playground-result {
+  gap: 8px;
+}
+.master-detail .simple-question {
+  gap: 8px;
+}
+.master-detail .simple-question + .simple-question {
+  padding-top: 10px;
+}
+.master-detail .field {
+  gap: 4px;
+  font-size: 12px;
+}
+.master-detail .simple-definition textarea,
+.master-detail .playground-input textarea {
+  min-height: 0;
+  padding: 7px 9px;
+  line-height: 1.45;
+}
+.master-detail .criterion {
+  padding: 4px 0;
+}
+.master-detail .criteria-label {
+  margin-bottom: 4px;
+}
+.master-detail .criteria-list > small {
+  margin-top: 4px;
+}
+.master-detail .advanced-config {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.master-detail .playground .playground-body {
+  gap: 10px;
+  min-height: 0;
+  height: 100%;
+}
+.master-detail .playground-result {
+  padding-top: 10px;
+}
+.master-detail .answer-summary {
+  gap: 8px;
+}
+.master-detail .answer-value {
+  font-size: 22px;
+}
+.master-detail .answer-value + .answer-meter {
+  margin-top: 6px;
+}
+.master-detail .probability-row {
+  margin: 4px 0;
+}
+.master-detail .score-legend {
+  margin-top: 8px;
+}
+.master-detail .score-legend > span {
+  padding: 6px;
+}
+.master-detail .inline-connect {
+  flex: none;
+  margin-top: 0;
+  padding: 8px 14px;
+}
+.master-detail .inline-connect[open] {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.master-detail .inline-connect[open] > summary {
+  margin-bottom: 12px;
+}
+.master-detail .empty {
+  flex: 1;
+  min-height: 0;
+  padding: 24px;
+}
+.master-detail .content:has(.inline-connect[open]),
+.master-detail .content:has(.advanced-config[open]) {
+  overflow: auto;
+}
+@media (max-width: 1150px) and (min-width: 701px) {
+  .master-detail .content {
+    padding: 8px 16px 10px;
+  }
+  .master-detail .playground-input textarea,
+  .master-detail .simple-definition textarea {
+    height: 3.3em;
+  }
+  .master-detail .answer-value {
+    font-size: 18px;
+  }
+  .master-detail .inline-connect {
+    padding: 6px 12px;
+  }
+}
+@media (max-width: 700px) {
+  .master-detail.shell,
+  .master-detail .workspace,
+  .master-detail .content,
+  .detail-screen,
+  .editor-screen {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .master-detail .editor-grid,
+  .master-detail .editor-grid > .panel,
+  .master-detail .panel-body {
+    height: auto;
+    overflow: visible;
+  }
+  .master-detail .editor-grid {
+    grid-template-columns: 1fr;
+  }
+  .master-detail .editor-grid > .playground {
+    border-left: 0;
+    border-top: 1px solid var(--border);
   }
 }

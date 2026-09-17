@@ -13,16 +13,7 @@ import {
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
-import {
-  Boxes,
-  Trash2,
-  Plug,
-  Settings,
-  History,
-  ArrowLeft,
-  Plus,
-  Search,
-} from "lucide-react";
+import { Boxes, Trash2, Settings, History } from "lucide-react";
 import { api, setCsrf, pretty, setDemoMode } from "./api";
 import { Button, Drawer, Field, Notice, JsonEditor } from "./ui";
 import { FunctionEditor, discardDraft } from "./FunctionEditor";
@@ -88,8 +79,6 @@ function Workspace() {
       new URLSearchParams(location.search).get("function"),
     ),
     [drawer, setDrawer] = useState(""),
-    [search, setSearch] = useState(""),
-    [filter, setFilter] = useState("all"),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [pendingDelete, setPendingDelete] = useState<any>(null),
@@ -182,8 +171,6 @@ function Workspace() {
       await list.refetch();
       setId(f.id);
       setDrawer("");
-      setFilter("all");
-      setSearch("");
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -264,7 +251,7 @@ function Workspace() {
               </div>
             </div>
           ) : id && selected ? (
-            <>
+            <div className="detail-screen">
               {selected.archived_at && (
                 <Notice>
                   {tr("此函数已归档，业务调用已停止。可在左侧恢复。")}
@@ -276,7 +263,6 @@ function Workspace() {
               <FunctionEditor
                 key={id}
                 id={id}
-                onBack={() => setId(null)}
                 onUpdated={() => list.refetch()}
               />
               <details
@@ -296,7 +282,7 @@ function Workspace() {
                   />
                 )}
               </details>
-            </>
+            </div>
           ) : (
             <div className="empty">
               <Boxes size={30} />

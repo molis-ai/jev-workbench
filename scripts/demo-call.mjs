@@ -18,7 +18,7 @@ const r = await fetch(c.endpoint + "/v1/functions/ticket_route/invoke", {
   },
   body: JSON.stringify({
     version: 1,
-    input: { content: process.argv[2] ?? "我的订单被重复扣款，请协助退款。" },
+    input: { content: process.argv[2] ?? "Please refund the duplicate charge." },
   }),
   signal: AbortSignal.timeout(35000),
 });

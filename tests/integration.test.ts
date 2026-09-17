@@ -262,6 +262,16 @@ describe("provider failure policy", () => {
       broken.evaluate({}, AbortSignal.timeout(2000), () => {}),
     ).rejects.toMatchObject({ code: "UPSTREAM_UNAVAILABLE" });
     expect(calls).toBe(1);
+    const captured: any[] = [];
+    const listing = new TypeSafeProvider(store, async (url, init: any) => {
+      captured.push({ url, init });
+      return Response.json({ models: ["jev-latest"] });
+    });
+    await listing.models();
+    expect(captured[0].url).toBe("https://api.typesafe.ai/v1/models");
+    expect(captured[0].init.method).toBe("GET");
+    expect(captured[0].init.headers["Content-Type"]).toBeUndefined();
+    expect(captured[0].init.headers.Authorization).toBe("Bearer key");
   });
   it("bounded queue rejects overflow and cancellation releases permits", async () => {
     const gate = new Gate(1, 1),
@@ -409,5 +419,81 @@ describe("function list lifecycle", () => {
     release();
     expect((await running).statusCode).toBe(200);
     expect((await admin(`/functions/${f.id}`, "DELETE")).statusCode).toBe(200);
+  });
+  it("official systemone requires an explicit grant, returns the provider body, and stores no payload", async () => {
+    const { s, admin, business } = await setup();
+    const body = {
+      model: "jev-1.13.0",
+      state: "重复扣款请退款",
+      questions: {
+        is_billing: { type: "noul", instructions: "这是账单问题吗？" },
+      },
+    };
+    const denied = (
+      await admin("/clients", "POST", {
+        name: "functions-only",
+        kind: "api",
+        grants: [],
+      })
+    ).json();
+    expect(
+      (await business("/v1/systemone", denied.token, body)).statusCode,
+    ).toBe(403);
+    expect((await business("/v1/models", denied.token)).statusCode).toBe(403);
+    const allowed = (
+      await admin("/clients", "POST", {
+        name: "official",
+        kind: "api",
+        grants: [],
+        official_invoke: true,
+      })
+    ).json();
+    const r = await business("/v1/systemone", allowed.token, body);
+    expect(r.statusCode, r.body).toBe(200);
+    expect(r.json()).toMatchObject({
+      model: "jev-1.13.0",
+      answers: { is_billing: { type: "noul" } },
+    });
+    expect(r.json().status).toBeUndefined();
+    expect(r.headers["x-request-id"]).toBeTruthy();
+    expect((await business("/v1/models", allowed.token)).json()).toEqual({
+      models: ["jev-1.13.0"],
+    });
+    const row = s.db
+      .prepare(
+        "SELECT function_id,diagnostic_meta_json,requested_model FROM runs WHERE request_id=?",
+      )
+      .get(r.headers["x-request-id"]) as any;
+    expect(row.function_id).toBeNull();
+    expect(JSON.parse(row.diagnostic_meta_json)).toMatchObject({
+      official: true,
+      fixture: true,
+    });
+    expect(JSON.stringify(row)).not.toContain("重复扣款请退款");
+  });
+  it("production official invoke without a key is PROVIDER_NOT_CONFIGURED", async () => {
+    const home = mkdtempSync(join(tmpdir(), "jev-official-"));
+    const s = await createApp({ home, port: 17421 });
+    try {
+      const cl = s.clients.create("official", "api", [], true);
+      const r = await s.app.inject({
+        url: "/v1/systemone",
+        method: "POST",
+        headers: {
+          host: "127.0.0.1:17421",
+          authorization: "Bearer " + cl.token,
+        },
+        payload: {
+          model: "jev-1.13.0",
+          state: "x",
+          questions: { q: { type: "noul", instructions: "x" } },
+        },
+      });
+      expect(r.statusCode).toBe(503);
+      expect(r.json().error.code).toBe("PROVIDER_NOT_CONFIGURED");
+    } finally {
+      await s.app.close();
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 });

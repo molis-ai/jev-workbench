@@ -1,6 +1,6 @@
 # 验收记录 · 2026-09-18
 
-本轮完成等级：**功能可用（离线模拟）**。用户明确确认没有 TypeSafe Key，先用模拟数据完成其他。未以模拟测试宣称真实模型或四个目标Agent联调完成。
+本轮完成等级：**功能可用（含真实 TypeSafe）**。2026-09-18 已用正式服务 Key 跑通配置→试跑→发布→HTTP 调用，以及官方 `/v1/systemone`。Agent 运行端提供可选的官方 TypeSafe skill 安装/卸载（确认前不写配置）；测试使用假 `npx`，不改本机 Claude/Codex。
 
 ## 环境与结果
 
@@ -8,7 +8,7 @@ macOS ARM64，Node v24.14.0，pnpm 11.9.0，better-sqlite3 12.11.1，MCP SDK 1.3
 
 - `pnpm typecheck`：通过。
 - `pnpm build`：通过，同源SPA、服务、MCP桥、完整Pi扩展包均生成；编辑器拆成独立chunk。
-- `pnpm test`：23项通过，含下面列出的实际行为与状态验证。
+- `pnpm test`：31 项通过（含官方公开示例合同、官方入口授权隔离、归档/删除、MCP/Pi 同合同）。
 - `pnpm test:e2e`：1条完整双语浏览器故事通过：创建Choice→试跑→保存样例→发布→未保存编辑→切换创建Noul/Score→英文编辑试跑→返回原函数保留草稿→固定授权HTTP调用→清除Token→归档/恢复→移入回收站/恢复/永久删除→搜索→手机→语言刷新持久化；无页面JS错误。
 - 1440/1024截图核验；390px可读、无文档水平溢出。独立视觉review发现窄屏试跑分组和手机授权行两处问题，均已修复并复核resolved。截图在`.impeccable/review`。
 
@@ -36,7 +36,10 @@ macOS ARM64，Node v24.14.0，pnpm 11.9.0，better-sqlite3 12.11.1，MCP SDK 1.3
 | 启停、重复启动、端口冲突、实例验证、重启恢复 | 通过 | 生命周期测试启动真实构建进程；不向未经验证PID发送kill |
 | 缺Key正式启动与试跑 | 通过 | UI可编辑，Provider返回503 PROVIDER_NOT_CONFIGURED，不fallback |
 | 离线演示与正式发布隔离 | 通过 | 独立端口/目录、常驻横幅；生产重新打开含fixture记录的库仍拒绝以其发布 |
-| 真实TypeSafe与四个实际Agent的推理 | 未运行（本轮延后） | 用户无Key；没有产生供应商费用 |
+| 官方 `/v1/systemone` 与 `/v1/models` 授权隔离 | 通过（fixture） | 无授权403、演示409、缺Key 503；问答正文不入库 |
+| 公开 TypeSafe 文档中的 Noul/Choice/Score 答案形状 | 通过（无 Key） | `tests/official-contract.test.ts` 使用 2026-09-17 文档完整示例；Score 校验 Σ i·P(i) |
+| GET `/v1/models` HTTP 形状 | 通过（mock transport） | 固定 `https://api.typesafe.ai/v1/models`，GET 不带 Content-Type |
+| 真实TypeSafe与四个实际Agent的推理 | 部分通过（2026-09-18 真 Key） | 正式 17420：`GET /v1/models` 返回 `jev-latest`/`jev-preview` 别名；请求 `jev-1.13.0` 时响应 `model` 原样为 `jev-1.13.0`。函数试跑扣款工单 `ok/billing`，模糊工单 `needs_review/unclassified`；发布 v1 后客户端 invoke 同样 `ok/billing`，`simulated=false`。官方 `POST /v1/systemone` Noul 返回 `0.98` 且带 usage。四个 Agent 运行端仍未做真实工具推理。 |
 | 业务准确率校准、macOS x64/Windows/Linux发布 | 未运行 | 不属于本机模拟通过能证明的结果 |
 
 ## 本次左右工作台追加验证

@@ -291,6 +291,12 @@ export function validateAnswers(c: Config, body: any) {
         keys.some((k) => a.legend[k] !== q.criteria[Number(k)])
       )
         bad();
+      const expected = keys.reduce(
+        (n, k) => n + Number(k) * a.probabilities[k],
+        0,
+      );
+      // TypeSafe: score is Σ levelIndex * probability (docs.typesafe.ai/primitives/score).
+      if (Math.abs(a.score - expected) > 0.05) bad();
     }
   }
   return body;

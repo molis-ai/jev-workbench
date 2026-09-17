@@ -4,9 +4,9 @@ const chinese = Object.fromEntries(Object.entries(english).map(([zh, en]) => [en
 export type Language = "zh" | "en";
 let language: Language = (() => {
   try {
-    return localStorage.getItem("jev-language") === "en" ? "en" : "zh";
+    return localStorage.getItem("jev-language") === "zh" ? "zh" : "en";
   } catch {
-    return "zh";
+    return "en";
   }
 })();
 const listeners = new Set<() => void>();

@@ -53,6 +53,7 @@ export const objectSchema = z
     additionalProperties: z.literal(false),
   })
   .strict();
+/** Function DSL keeps instructions as strings. Official TypeSafe also allows object/array instructions on /v1/systemone. */
 const question = z.discriminatedUnion("type", [
   z
     .object({
@@ -138,5 +139,14 @@ export const invokeBody = z
   .object({
     version: z.number().int().positive().optional(),
     input: z.record(z.unknown()),
+  })
+  .strict();
+export const officialBody = z
+  .object({
+    model: z.string().min(1),
+    state: z.union([z.string(), z.record(z.unknown()), z.array(z.unknown())]),
+    questions: z
+      .record(z.string().min(1), z.record(z.unknown()))
+      .refine((q) => Object.keys(q).length >= 1),
   })
   .strict();

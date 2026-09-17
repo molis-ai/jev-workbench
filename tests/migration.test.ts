@@ -40,6 +40,17 @@ it("upgrades a version-1 database without losing an existing function or saved e
       f.id,
     );
     expect(new Functions(db).get(f.id).deleted_at).toBe("2026-09-18");
+    expect(
+      db
+        .prepare("SELECT official_invoke FROM clients")
+        .all()
+        .every((c: any) => c.official_invoke === 0),
+    ).toBe(true);
+    expect(
+      db
+        .prepare("SELECT 1 FROM schema_migrations WHERE version=3")
+        .get(),
+    ).toBeTruthy();
   } finally {
     db.close();
     rmSync(home, { recursive: true, force: true });

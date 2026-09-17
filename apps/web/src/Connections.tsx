@@ -1,5 +1,5 @@
 import { tr, dateTime, getLanguage } from "./i18n";
-import { snippet } from "./snippets";
+import { snippet, officialSnippet } from "./snippets";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Copy, KeyRound, Plug, Terminal } from "lucide-react";
@@ -32,7 +32,9 @@ export function Connections({
     [project, setProject] = useState(""),
     [plan, setPlan] = useState<any>(null),
     [drawer, setDrawer] = useState(false),
-    [editing, setEditing] = useState<string | null>(null);
+    [editing, setEditing] = useState<string | null>(null),
+    [officialInvoke, setOfficialInvoke] = useState(false),
+    [skillPlan, setSkillPlan] = useState<any>(null);
   const published = functions.filter((f) => f.active_version && !f.archived_at && !f.deleted_at);
   const clients = useQuery({
     queryKey: ["clients"],
@@ -45,6 +47,10 @@ export function Connections({
   const installations = useQuery({
     queryKey: ["installations"],
     queryFn: () => api("/integrations"),
+  });
+  const skillInstalls = useQuery({
+    queryKey: ["skills"],
+    queryFn: () => api("/skills"),
   });
   const detail = useQuery({
     queryKey: ["connection-function", selected],
@@ -69,6 +75,7 @@ export function Connections({
   const code = c
     ? snippet(lang, endpoint, version, c.input_schema)
     : "先选择一个已发布函数与版本。";
+  const officialCode = officialSnippet(lang, location.origin);
   const GrantPicker = () => (
     <div className="stack">
       <p className="muted">
@@ -166,7 +173,7 @@ export function Connections({
       </div>
       {error && <Notice error>{error}</Notice>}
       {message && <Notice>{tr(message)}</Notice>}
-      {[clients, installations, detection, detail]
+      {[clients, installations, skillInstalls, detection, detail]
         .filter((q) => q.isError)
         .map((q, i) => (
           <Notice key={i} error>
@@ -243,6 +250,19 @@ export function Connections({
                 </Button>
               </div>
               <pre className="code-block">{code}</pre>
+              <details>
+                <summary>{tr("官方 Jev 入口（需单独授权）")}</summary>
+                <p className="muted">
+                  {tr(
+                    "调用方按官方 {model,state,questions} 传参。凭证必须勾选「允许官方 Jev 调用」。演示服务拒绝此入口。",
+                  )}
+                </p>
+                <div className="endpoint">
+                  <span>POST</span>
+                  <code>{`${location.origin}/v1/systemone`}</code>
+                </div>
+                <pre className="code-block">{officialCode}</pre>
+              </details>
               {c && (
                 <details>
                   <summary>{tr("输入与输出合同")}</summary>
@@ -266,6 +286,7 @@ export function Connections({
                   setEditing(null);
                   setGrants([]);
                   setName("");
+                  setOfficialInvoke(false);
                   setDrawer(true);
                 }}
               >
@@ -294,12 +315,17 @@ export function Connections({
                       </span>
                     </div>
                     <small>
-                      {cl.grants
-                        .map(
-                          (g: any) =>
-                            `${g.function_key}@${g.pinned_version ?? "default"}`,
-                        )
-                        .join("，") || tr("无函数授权")}{" "}
+                      {[
+                        cl.official_invoke ? tr("官方 Jev") : null,
+                        cl.grants
+                          .map(
+                            (g: any) =>
+                              `${g.function_key}@${g.pinned_version ?? "default"}`,
+                          )
+                          .join("，") || tr("无函数授权"),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}{" "}
                       {tr("· 最近调用")}{" "}
                       {cl.last_seen_at ? dateTime(cl.last_seen_at) : tr("尚无")}
                     </small>
@@ -309,6 +335,7 @@ export function Connections({
                           onClick={() => {
                             setEditing(cl.id);
                             setName(cl.name);
+                            setOfficialInvoke(!!cl.official_invoke);
                             setGrants(
                               cl.grants.map((g: any) => ({
                                 function_id: g.function_id,
@@ -524,6 +551,94 @@ export function Connections({
           </section>
           <section className="panel">
             <div className="panel-title">
+              <h2>{tr("TypeSafe skill（可选）")}</h2>
+            </div>
+            <div className="panel-body stack">
+              <p className="muted">
+                {tr(
+                  "安装官方 typesafe-ai skill，让 Agent 按 TypeSafe 文档设计判断。不安装也能通过本工作台的 MCP / HTTP 调用函数。确认前不会改任何运行端。",
+                )}
+              </p>
+              <Button
+                disabled={busy}
+                onClick={() =>
+                  task(async () =>
+                    setSkillPlan(
+                      await api("/skills/plan", "POST", {
+                        runtime,
+                        scope,
+                        ...(scope === "project" ? { project } : {}),
+                      }),
+                    ),
+                  )
+                }
+              >
+                {tr("预览 Skill 安装")}
+              </Button>
+              {skillPlan && (
+                <>
+                  <Notice>
+                    {skillPlan.supported
+                      ? tr("确认后只写入本产品条目，保留其他配置。")
+                      : tr(skillPlan.reason)}
+                  </Notice>
+                  <pre className="code-block">{skillPlan.after}</pre>
+                  {skillPlan.supported && (
+                    <Button
+                      disabled={busy}
+                      variant="primary"
+                      onClick={() =>
+                        task(async () => {
+                          await api("/skills/apply", "POST", {
+                            plan_id: skillPlan.plan_id,
+                          });
+                          setSkillPlan(null);
+                          setMessage(tr("官方 Skill 已安装"));
+                          await skillInstalls.refetch();
+                        })
+                      }
+                    >
+                      {tr("确认安装官方 Skill")}
+                    </Button>
+                  )}
+                </>
+              )}
+              {skillInstalls.data?.filter((s: any) => s.status !== "removed")
+                .length ? (
+                skillInstalls.data
+                  .filter((s: any) => s.status !== "removed")
+                  .map((s: any) => (
+                    <div className="record" key={s.id}>
+                      <div>
+                        <strong>
+                          {s.runtime} · {s.scope}
+                        </strong>
+                        <span className="badge">{tr("已写入")}</span>
+                      </div>
+                      <div className="row">
+                        <Button
+                          disabled={busy}
+                          variant="danger"
+                          onClick={() =>
+                            task(async () => {
+                              await api(`/skills/${s.id}/remove`, "POST", {});
+                              setMessage(tr("Skill 已卸载"));
+                              await skillInstalls.refetch();
+                            })
+                          }
+                        >
+                          {tr("卸载 Skill")}
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <p className="muted">{tr("尚未安装官方 Skill。")}</p>
+              )}
+            </div>
+          </section>
+          <section className="panel">
+            <div className="panel-title">
               <h2>{tr("已准备的接入")}</h2>
             </div>
             <div className="panel-body stack">
@@ -614,6 +729,19 @@ export function Connections({
             <input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
           <GrantPicker />
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={officialInvoke}
+              onChange={(e) => setOfficialInvoke(e.target.checked)}
+            />
+            <span>{tr("允许官方 Jev 调用")}</span>
+          </label>
+          <p className="muted">
+            {tr(
+              "勾选后可用同一 Token 调用 POST /v1/systemone 与 GET /v1/models，按官方合同传参，费用记在本机 TypeSafe Key 上。默认关闭。",
+            )}
+          </p>
           {shownToken ? (
             <>
               <Notice>
@@ -633,13 +761,18 @@ export function Connections({
               onClick={() =>
                 task(async () => {
                   if (editing) {
-                    await api("/clients/" + editing, "PATCH", { name, grants });
+                    await api("/clients/" + editing, "PATCH", {
+                      name,
+                      grants,
+                      official_invoke: officialInvoke,
+                    });
                     setDrawer(false);
                   } else {
                     const r = await api("/clients", "POST", {
                       name,
                       kind: "api",
                       grants,
+                      official_invoke: officialInvoke,
                     });
                     setShownToken(r.token);
                   }

@@ -18,6 +18,24 @@ it("explicit demo provides normal/review/error/timeout without network; demo pro
   let prod: Awaited<ReturnType<typeof createApp>> | undefined;
   try {
     await seedDemo(demo, home);
+    const official = demo.clients.create("official", "api", [], true);
+    expect(
+      (
+        await demo.app.inject({
+          url: "/v1/systemone",
+          method: "POST",
+          headers: {
+            host: "127.0.0.1:17429",
+            authorization: "Bearer " + official.token,
+          },
+          payload: {
+            model: "jev-1.13.0",
+            state: "退款",
+            questions: { q: { type: "noul", instructions: "账单?" } },
+          },
+        })
+      ).json().error.code,
+    ).toBe("DEMO_MODE");
     const f = demo.functions.list()[0];
     const before = demo.clients.list().length;
     await seedDemo(demo, home);

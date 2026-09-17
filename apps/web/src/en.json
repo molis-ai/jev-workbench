@@ -372,5 +372,19 @@
   "移入回收站": "Move to Trash",
   "没有匹配的函数": "No matching functions",
   "暂无函数": "No functions",
-  "此函数在回收站，版本、样例与授权仍保留。恢复后可继续编辑和调用。": "This function is in Trash. Versions, examples and grants are preserved. Restore it to resume editing and calls."
+  "此函数在回收站，版本、样例与授权仍保留。恢复后可继续编辑和调用。": "This function is in Trash. Versions, examples and grants are preserved. Restore it to resume editing and calls.",
+  "允许官方 Jev 调用": "Allow official Jev calls",
+  "勾选后可用同一 Token 调用 POST /v1/systemone 与 GET /v1/models，按官方合同传参，费用记在本机 TypeSafe Key 上。默认关闭。": "When enabled, the same token may call POST /v1/systemone and GET /v1/models with the official request body. Charges use this machine’s TypeSafe key. Off by default.",
+  "官方 Jev 入口（需单独授权）": "Official Jev endpoint (separate grant)",
+  "调用方按官方 {model,state,questions} 传参。凭证必须勾选「允许官方 Jev 调用」。演示服务拒绝此入口。": "Callers send official {model,state,questions}. The credential must have official Jev access enabled. The demo service rejects this endpoint.",
+  "官方 Jev": "Official Jev",
+  "TypeSafe skill（可选）": "TypeSafe skill (optional)",
+  "安装官方 typesafe-ai skill，让 Agent 按 TypeSafe 文档设计判断。不安装也能通过本工作台的 MCP / HTTP 调用函数。确认前不会改任何运行端。": "Install the official typesafe-ai skill so agents follow TypeSafe docs when designing judgments. You can still call this workbench over MCP or HTTP without it. Nothing is written until you confirm.",
+  "预览 Skill 安装": "Preview skill install",
+  "确认安装官方 Skill": "Confirm skill install",
+  "已安装的 TypeSafe skill": "Installed TypeSafe skills",
+  "尚未安装官方 Skill。": "No official skill installed.",
+  "卸载 Skill": "Remove skill",
+  "Skill 已卸载": "Skill removed",
+  "官方 Skill 已安装": "Official skill installed"
 }

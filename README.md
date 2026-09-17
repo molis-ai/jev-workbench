@@ -1,10 +1,10 @@
 # Jev Workbench
 
-中文 · [English](README.en.md)
+中文 · [English README with screenshots](README.en.md)
 
-本机浏览器里的判断函数服务：配置输入、问题、复核规则和输出，发布不可变版本，再由 HTTP、MCP 或 Pi 调用同一个执行引擎。
+本机判断函数服务：在浏览器里配置输入、问题、复核规则和输出，发布不可变版本，再由 HTTP、MCP 或 Pi 调用同一个执行引擎。也可以把官方 TypeSafe `systemone` 请求代发到云端，TypeSafe Key 只留在本机。
 
-本轮已按要求提供完整离线演示。正式 TypeSafe Provider 已实现；由于没有 API Key，真实推理及四个实际 Agent 的模型调用尚未联调。详见 [VALIDATION.md](VALIDATION.md)。
+许可证 [MIT](LICENSE)。安全说明见 [SECURITY.md](SECURITY.md)。当前完成等级是功能可用（离线模拟）：没有 TypeSafe Key，因此**没有**真实云端推理或四个 Agent 的模型调用。详见 [VALIDATION.md](VALIDATION.md)。
 
 ## 单页工作台
 
@@ -14,7 +14,7 @@
 
 ## 立即体验（无需 Key）
 
-环境：Node.js 24，pnpm 11.9.0。当前机器已安装依赖、构建并启动演示。
+环境：Node.js 24，pnpm 11.9.0。
 
 ```sh
 pnpm install --frozen-lockfile
@@ -22,24 +22,22 @@ pnpm build
 pnpm demo
 ```
 
-浏览器自动打开 [本地演示](http://127.0.0.1:17430)，一次性引导会建立管理会话。常驻横幅明确所有答案为模拟，不访问 TypeSafe、不计费。
-
-演示已预置 `ticket_route@1`、一个受限 API 客户端和四个样例：
+浏览器自动打开 [本地演示](http://127.0.0.1:17430)，默认英文界面。常驻横幅标明所有答案为模拟。预置英文 `ticket_route@1`、四个样例和一个受限客户端。若本机已有旧的中文演示库，删除 `~/.jev-workbench-demo` 后重新 `pnpm demo`。
 
 | 输入 | 预期 |
 |---|---|
-| 我的订单被重复扣款，请协助退款 | `ok`，`department=billing` |
-| 情况不清楚，需要复核 | `needs_review`，`department=null` |
-| 模拟错误 | 502，`UPSTREAM_UNAVAILABLE` |
-| 模拟超时 | 504，`UPSTREAM_TIMEOUT` |
+| Please refund the duplicate charge. | `ok`，`department=billing` |
+| unclear, needs review | `needs_review`，`department=null` |
+| simulate error | 502，`UPSTREAM_UNAVAILABLE` |
+| simulate timeout | 504，`UPSTREAM_TIMEOUT` |
 
 可在函数编辑页选样例测试、修改配置、保存、重新试跑后发布 v2；固定 v1 的客户端不会自动升级。
 
 ```sh
 pnpm demo:call
-pnpm demo:call '情况不清楚，需要复核'
-pnpm demo:call '模拟错误'  # 故意失败，退出码 1
-pnpm demo:call '模拟超时'  # 故意失败，退出码 1
+pnpm demo:call 'unclear, needs review'
+pnpm demo:call 'simulate error'
+pnpm demo:call 'simulate timeout'
 pnpm demo status
 pnpm demo open
 pnpm demo stop
@@ -76,6 +74,17 @@ curl http://127.0.0.1:17420/v1/functions/ticket_route/invoke \
 ```
 
 管理会话、客户端Token、TypeSafe Key相互独立。客户端创建时明文仅显示一次；库中只保存哈希。默认无授权，勾选函数后固定指定版本。`needs_review`是成功判断的业务状态，不是网络错误。
+
+勾选「允许官方 Jev 调用」后，同一 Token 也可按官方合同转发：
+
+```sh
+curl http://127.0.0.1:17420/v1/systemone \
+  -H "Authorization: Bearer $JEV_CLIENT_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"jev-1.13.0","state":"我的订单被重复扣款，请协助退款。","questions":{"is_billing":{"type":"noul","instructions":"这是账单或退款问题吗？"}}}'
+```
+
+`GET /v1/models` 同样需要该授权。调用方不能改上游地址，也不能提交 TypeSafe Key。演示服务拒绝这两条路由。
 
 Agent 接入页提供检测、授权、范围选择、脱敏变更、应用、连接测试和撤销。应用会创建独立凭证文件，配置中只有文件路径。只操作 `jev-workbench` 条目；已有冲突会停止，不用整份旧备份覆盖用户后续修改。
 
@@ -126,4 +135,4 @@ Vitest使用临时SQLite与明确注入的上游fixture；Playwright使用临时
 
 没有持久化队列、缓存、幂等保证、多租户、桌面安装包或本地模型。重复调用可能重复计费。模型概率与confidence不是业务正确率。macOS ARM64 / Node 24.14.0已运行，其他平台未验证；better-sqlite3若无目标平台预构建产物，可能需要本机编译工具。
 
-需求书：[specs/v1/spec.md](specs/v1/spec.md)。官方上游合同：[TypeSafe HTTP API](https://docs.typesafe.ai/api)。
+需求书：[specs/v1/spec.md](specs/v1/spec.md)、[specs/official-proxy/spec.md](specs/official-proxy/spec.md)。官方上游合同：[TypeSafe HTTP API](https://docs.typesafe.ai/api)。贡献：[CONTRIBUTING.md](CONTRIBUTING.md)。

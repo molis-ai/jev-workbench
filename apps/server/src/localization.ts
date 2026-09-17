@@ -13,6 +13,8 @@ const messages: Record<string, string> = {
   FUNCTION_DISABLED:
     "This function is disabled, archived or in Trash. Restore it before calling.",
   FUNCTION_FORBIDDEN: "This client is not authorized to call the function.",
+  OFFICIAL_INVOKE_FORBIDDEN:
+    "This client is not authorized to call the official Jev API. Enable official invoke when creating or editing the client.",
   FUNCTION_FORBIDDEN_VERSION: "This client cannot use that version.",
   VERSION_FORBIDDEN: "This client is pinned to a different version.",
   VERSION_NOT_FOUND: "The requested published version does not exist.",

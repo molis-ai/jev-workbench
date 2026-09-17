@@ -22,11 +22,9 @@ export function discardDraft(id: string) {
 }
 export function FunctionEditor({
   id,
-  onBack,
   onUpdated,
 }: {
   id: string;
-  onBack: () => void;
   onUpdated: () => void;
 }) {
   const query = useQuery({
@@ -38,21 +36,14 @@ export function FunctionEditor({
   ) : query.isError ? (
     <Notice error>{query.error.message}</Notice>
   ) : (
-    <Editor
-      key={id}
-      initial={query.data}
-      onBack={onBack}
-      onUpdated={onUpdated}
-    />
+    <Editor key={id} initial={query.data} onUpdated={onUpdated} />
   );
 }
 function Editor({
   initial,
-  onBack,
   onUpdated,
 }: {
   initial: any;
-  onBack: () => void;
   onUpdated: () => void;
 }) {
   const cached = drafts.get(initial.id);
@@ -135,7 +126,6 @@ function Editor({
     });
     setSaved(f);
     onUpdated();
-    setMessage(tr("草稿已保存"));
     return f;
   }
   async function preview() {
@@ -183,7 +173,7 @@ function Editor({
     inputObject = null;
   }
   return (
-    <>
+    <div className="editor-screen">
       <div className="page-heading editor-heading">
         <div>
           <div className="row">
@@ -423,7 +413,7 @@ function Editor({
                         />
                       ) : (
                         <textarea
-                          rows={f.type === "array" ? 3 : 5}
+                          rows={f.type === "array" ? 2 : 3}
                           value={
                             f.type === "array"
                               ? (inputObject[key] ?? []).join("\n")
@@ -802,6 +792,6 @@ function Editor({
       >
         {drawer === "runs" && <Runs id={saved.id} />}
       </Drawer>
-    </>
+    </div>
   );
 }

@@ -13,9 +13,13 @@ import { Clients } from "./clients";
 import { Invoker } from "./invoke";
 import { AppError, fail } from "./errors";
 import { validateConfig, readPointer } from "./engine";
-import { invokeBody } from "../../../packages/contracts/src/config";
+import {
+  invokeBody,
+  officialBody,
+} from "../../../packages/contracts/src/config";
 import { randomUUID } from "node:crypto";
 import { Integrations } from "./integrations";
+import { Skills } from "./skills";
 const grants = z.array(
   z
     .object({
@@ -51,7 +55,8 @@ export async function createApp(options: {
     functions = new Functions(db, !!provider.fixture),
     clients = new Clients(db),
     invoker = new Invoker(db, provider);
-  const integrations = new Integrations(options.home, clients, db, origin);
+  const integrations = new Integrations(options.home, clients, db, origin),
+    skills = new Skills(db);
   await app.register(cookie);
   app.setErrorHandler((e: any, req, reply) => {
     const known = e instanceof AppError;
@@ -400,17 +405,32 @@ export async function createApp(options: {
         name: z.string().min(1),
         kind: z.enum(["api", "mcp", "pi"]),
         grants,
+        official_invoke: z.boolean().optional(),
       })
       .strict()
       .parse(req.body);
-    return clients.create(b.name, b.kind, b.grants);
+    return clients.create(
+      b.name,
+      b.kind,
+      b.grants,
+      b.official_invoke ?? false,
+    );
   });
   app.patch("/api/admin/clients/:id", async (req) => {
     const b = z
-      .object({ name: z.string().min(1), grants })
+      .object({
+        name: z.string().min(1),
+        grants,
+        official_invoke: z.boolean().optional(),
+      })
       .strict()
       .parse(req.body);
-    return clients.update((req.params as any).id, b.name, b.grants);
+    return clients.update(
+      (req.params as any).id,
+      b.name,
+      b.grants,
+      b.official_invoke,
+    );
   });
   app.post("/api/admin/clients/:id/revoke", async (req) =>
     clients.revoke((req.params as any).id),
@@ -508,6 +528,27 @@ export async function createApp(options: {
       signalFor(req, reply),
     );
   });
+  const officialClient = (req: any) => {
+    const client = clients.authenticate(req.headers.authorization);
+    if (options.demoMode)
+      fail(409, "DEMO_MODE", "演示服务不转发官方 Jev 接口。请使用正式服务");
+    return clients.requireOfficial(client);
+  };
+  app.get("/v1/models", async (req) => {
+    officialClient(req);
+    return provider.models();
+  });
+  app.post("/v1/systemone", async (req, reply) => {
+    const client = officialClient(req),
+      body = officialBody.parse(req.body),
+      r = await invoker.official(
+        body,
+        { client_id: client.id, source: client.kind },
+        signalFor(req, reply),
+      );
+    reply.header("x-request-id", r.requestId);
+    return r.response;
+  });
   app.post("/api/admin/integrations/detect", async () => integrations.detect());
   app.get("/api/admin/integrations", async () => integrations.list());
   app.post("/api/admin/integrations/plan", async (req) =>
@@ -534,6 +575,27 @@ export async function createApp(options: {
   app.post("/api/admin/integrations/:id/remove", async (req) =>
     integrations.remove((req.params as any).id),
   );
+  app.get("/api/admin/skills", async () => skills.list());
+  app.post("/api/admin/skills/plan", async (req) =>
+    skills.plan(
+      z
+        .object({
+          runtime: z.enum(["claude_code", "codex", "opencode", "pi"]),
+          scope: z.enum(["user", "project"]),
+          project: z.string().optional(),
+        })
+        .strict()
+        .parse(req.body),
+    ),
+  );
+  app.post("/api/admin/skills/apply", async (req) =>
+    skills.apply(
+      z.object({ plan_id: z.string() }).strict().parse(req.body).plan_id,
+    ),
+  );
+  app.post("/api/admin/skills/:id/remove", async (req) =>
+    skills.remove((req.params as any).id),
+  );
   const root = join(process.cwd(), "dist/web");
   if (existsSync(root)) {
     await app.register(serveStatic, { root });
@@ -558,5 +620,6 @@ export async function createApp(options: {
     clients,
     invoker,
     integrations,
+    skills,
   };
 }

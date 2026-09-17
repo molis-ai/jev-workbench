@@ -226,6 +226,8 @@ v1 表单支持 string、number、boolean、string[]，以及这些字段的必�
 | GET /v1/functions | 当前客户端可见函数及可调用版本；用于 MCP list |
 | GET /v1/functions/:key?version=N | 获取获授权版本的说明、input_schema、output_schema，不暴露内部问题/规则 |
 | POST /v1/functions/:key/invoke | `{version?:number,input:object}`；省略版号按授权规则解析 |
+| POST /v1/systemone | 官方 `{model,state,questions}` 透传；需客户端 `official_invoke`。合同见 specs/official-proxy/spec.md |
+| GET /v1/models | 官方模型列表透传；需同一授权 |
 | GET /health/live | 进程是否存在，公开但不返回本机路径/凭证/配置 |
 
 ```bash

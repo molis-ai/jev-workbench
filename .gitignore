@@ -3,6 +3,12 @@ dist/
 .playwright/
 test-results/
 playwright-report/
+coverage/
 *.log
 .env
+.env.*
+.DS_Store
+*.db
+*.db-wal
+*.db-shm
 .impeccable/review/
