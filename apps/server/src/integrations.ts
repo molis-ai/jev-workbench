@@ -2,7 +2,6 @@ import {
   existsSync,
   readFileSync,
   mkdirSync,
-  writeFileSync,
   unlinkSync,
   lstatSync,
 } from "node:fs";
@@ -13,20 +12,20 @@ import { promisify } from "node:util";
 import { parse, modify, applyEdits } from "jsonc-parser";
 import { randomUUID } from "node:crypto";
 import TOML from "@iarna/toml";
+import YAML from "yaml";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { hash, atomic } from "./security";
 import { type Clients, type Grant } from "./clients";
 import { type DB, now, audit } from "./storage";
 import { fail } from "./errors";
+import {
+  detectCommands,
+  hasMcp,
+  type Runtime,
+} from "./runtimes";
 const exec = promisify(execFile);
-const commands = {
-  claude_code: "claude",
-  codex: "codex",
-  opencode: "opencode",
-  pi: "pi",
-};
-type Runtime = keyof typeof commands;
+const OWNED = "jev-workbench";
 type Plan = {
   id: string;
   runtime: Runtime;
@@ -53,7 +52,9 @@ export class Integrations {
   ) {}
   async detect() {
     return Promise.all(
-      Object.entries(commands).map(async ([runtime, cmd]) => {
+      Object.entries(detectCommands).map(async ([runtime, cmd]) => {
+        if (!cmd)
+          return { runtime, detected: false, version: null };
         try {
           const { stdout } = await exec(cmd, ["--version"], {
             timeout: 3000,
@@ -82,13 +83,18 @@ export class Integrations {
     project?: string;
     grants: Grant[];
   }) {
+    if (!hasMcp(b.runtime))
+      fail(
+        422,
+        "CONFIG_INVALID",
+        "此运行端不支持自动写入 MCP。请安装 Skill。",
+      );
     if (
       b.scope === "project" &&
       (!b.project || !isAbsolute(b.project) || !existsSync(b.project))
     )
       fail(422, "CONFIG_INVALID", "项目范围需要已有的绝对目录");
-    const base = b.scope === "project" ? b.project! : homedir(),
-      id = randomUUID(),
+    const id = randomUUID(),
       credential = join(this.home, "clients", `${id}.json`),
       bridge = join(process.cwd(), "dist/mcp/index.js");
     const cmd = [process.execPath, bridge, "--credentials-file", credential];
@@ -100,31 +106,44 @@ export class Integrations {
       supported = true,
       reason: string | undefined;
     if (b.runtime === "opencode") {
-      path = join(
-        base,
-        b.scope === "user"
-          ? ".config/opencode/opencode.jsonc"
-          : "opencode.jsonc",
-      );
-      const alternate = path.replace(/jsonc$/, "json");
-      if (!existsSync(path) && existsSync(alternate)) path = alternate;
+      ({ path, before, after, entry } = this.planJsonc(
+        opencodePath(b.scope, b.project),
+        ["mcp", OWNED],
+        { type: "local", command: cmd, enabled: true },
+      ));
+    } else if (b.runtime === "gemini") {
+      ({ path, before, after, entry } = this.planJsonc(
+        join(scopeRoot(b.scope, b.project), ".gemini/settings.json"),
+        ["mcpServers", OWNED],
+        { command: cmd[0], args: cmd.slice(1) },
+      ));
+    } else if (b.runtime === "minimax_code") {
+      ({ path, before, after, entry } = this.planJsonc(
+        join(minimaxDir(b.scope, b.project), "mcp.json"),
+        ["mcpServers", OWNED],
+        { command: cmd[0], args: cmd.slice(1), enabled: true },
+      ));
+    } else if (b.runtime === "grok_build") {
+      path = join(grokDir(b.scope, b.project), "config.toml");
       before = this.read(path);
-      const errors: any[] = [];
-      const doc = parse(before || "{}", errors, { allowTrailingComma: true });
-      if (errors.length || !doc || Array.isArray(doc))
-        fail(422, "CONFIG_INVALID", "OpenCode 配置不是有效 JSONC");
-      if (doc.mcp?.["jev-workbench"])
+      const doc = this.parseToml(before);
+      if (doc.mcp_servers?.[OWNED])
         fail(409, "CONFIG_CHANGED", "已有 jev-workbench 条目，请先检查或撤销");
-      entry = { type: "local", command: cmd, enabled: true };
-      after = applyEdits(
-        before || "{}",
-        modify(before || "{}", ["mcp", "jev-workbench"], entry, {
-          formattingOptions: { insertSpaces: true, tabSize: 2 },
-        }),
-      );
+      entry = { command: cmd[0], args: cmd.slice(1) };
+      after = appendToml(before, grokTable(cmd));
+    } else if (b.runtime === "hermes") {
+      path = join(hermesDir(b.scope, b.project), "config.yaml");
+      before = this.read(path);
+      const merged = hermesUpsert(before, {
+        command: cmd[0],
+        args: cmd.slice(1),
+        enabled: true,
+      });
+      entry = merged.entry;
+      after = merged.after;
     } else if (b.runtime === "pi") {
       path = join(
-        base,
+        scopeRoot(b.scope, b.project),
         b.scope === "user"
           ? ".pi/agent/extensions/jev-workbench.ts"
           : ".pi/extensions/jev-workbench.ts",
@@ -140,17 +159,17 @@ export class Integrations {
               process.env.CODEX_HOME ?? join(homedir(), ".codex"),
               "config.toml",
             )
-          : join(base, b.scope === "user" ? ".claude.json" : ".mcp.json");
+          : join(
+              scopeRoot(b.scope, b.project),
+              b.scope === "user" ? ".claude.json" : ".mcp.json",
+            );
       before = this.read(path);
       const doc = this.parseConfig(b.runtime, before);
-      if (
-        doc.mcp_servers?.["jev-workbench"] ||
-        doc.mcpServers?.["jev-workbench"]
-      )
+      if (doc.mcp_servers?.[OWNED] || doc.mcpServers?.[OWNED])
         fail(409, "CONFIG_CHANGED", "已有 jev-workbench 条目，请先检查或撤销");
       command =
         b.runtime === "codex"
-          ? ["codex", "mcp", "add", "jev-workbench", "--", ...cmd]
+          ? ["codex", "mcp", "add", OWNED, "--", ...cmd]
           : [
               "claude",
               "mcp",
@@ -159,7 +178,7 @@ export class Integrations {
               "stdio",
               "--scope",
               b.scope,
-              "jev-workbench",
+              OWNED,
               "--",
               ...cmd,
             ];
@@ -249,11 +268,7 @@ export class Integrations {
             maxBuffer: 16384,
           });
           p.after = this.read(p.path);
-          const doc = this.parseConfig(p.runtime, p.after);
-          const actual =
-            doc[p.runtime === "codex" ? "mcp_servers" : "mcpServers"]?.[
-              "jev-workbench"
-            ];
+          const actual = this.ownedEntry(p.runtime, p.after);
           if (
             !actual ||
             actual.command !== p.entry.command ||
@@ -268,6 +283,10 @@ export class Integrations {
         } else {
           mkdirSync(join(p.path, ".."), { recursive: true, mode: 0o700 });
           atomic(p.path, p.after);
+          p.after = this.read(p.path);
+          const actual = this.ownedEntry(p.runtime, p.after);
+          if (actual !== undefined && actual !== null && p.runtime !== "pi")
+            p.entry = actual;
         }
         written = true;
       }
@@ -319,14 +338,68 @@ export class Integrations {
       this.applying.delete(p.path);
     }
   }
+  private planJsonc(path: string, segments: string[], entry: any) {
+    const before = this.read(path);
+    const src = before || "{}";
+    const errors: any[] = [];
+    const doc = parse(src, errors, { allowTrailingComma: true });
+    if (errors.length || !doc || Array.isArray(doc))
+      fail(422, "CONFIG_INVALID", "现有配置无法解析，请先修正配置文件");
+    let cursor: any = doc;
+    for (let i = 0; i < segments.length - 1; i++)
+      cursor = cursor?.[segments[i]];
+    if (cursor?.[segments[segments.length - 1]])
+      fail(409, "CONFIG_CHANGED", "已有 jev-workbench 条目，请先检查或撤销");
+    const after = applyEdits(
+      src,
+      modify(src, segments, entry, {
+        formattingOptions: { insertSpaces: true, tabSize: 2 },
+      }),
+    );
+    return { path, before, after, entry };
+  }
   private parseConfig(runtime: string, text: string): any {
     try {
-      return runtime === "codex"
+      return runtime === "codex" || runtime === "grok_build"
         ? TOML.parse(text || "")
         : JSON.parse(text || "{}");
     } catch {
       return fail(422, "CONFIG_INVALID", "现有配置无法解析，请先修正配置文件");
     }
+  }
+  private parseToml(text: string): any {
+    try {
+      return TOML.parse(text || "");
+    } catch {
+      return fail(422, "CONFIG_INVALID", "现有配置无法解析，请先修正配置文件");
+    }
+  }
+  private ownedEntry(runtime: string, text: string): any {
+    if (runtime === "opencode") {
+      const errors: any[] = [];
+      return parse(text || "{}", errors, { allowTrailingComma: true })?.mcp?.[
+        OWNED
+      ];
+    }
+    if (runtime === "pi") return text;
+    if (runtime === "hermes") {
+      try {
+        return YAML.parse(text || "")?.mcp_servers?.[OWNED];
+      } catch {
+        return fail(
+          422,
+          "CONFIG_INVALID",
+          "现有配置无法解析，请先修正配置文件",
+        );
+      }
+    }
+    if (runtime === "grok_build" || runtime === "codex")
+      return this.parseToml(text)?.mcp_servers?.[OWNED];
+    const errors: any[] = [];
+    const doc = parse(text || "{}", errors, { allowTrailingComma: true });
+    if (errors.length)
+      fail(422, "CONFIG_INVALID", "现有配置无法解析，请先修正配置文件");
+    return doc?.mcpServers?.[OWNED];
   }
   private get(id: string) {
     const i = this.db
@@ -399,46 +472,46 @@ export class Integrations {
     if (i.status === "removed") return { ok: true };
     const text = this.read(i.config_path);
     if (i.runtime === "opencode") {
-      const errors: any[] = [];
-      const doc = parse(text, errors, { allowTrailingComma: true });
-      if (
-        errors.length ||
-        !doc?.mcp?.["jev-workbench"] ||
-        hash(JSON.stringify(doc?.mcp?.["jev-workbench"])) !==
-          i.owned_entry_checksum
-      )
-        fail(409, "CONFIG_CHANGED", "本产品条目已被修改，无法安全撤销");
-      atomic(
-        i.config_path,
-        applyEdits(text, modify(text, ["mcp", "jev-workbench"], undefined, {})),
-      );
+      this.removeJsonc(i, text, ["mcp", OWNED]);
+    } else if (i.runtime === "gemini" || i.runtime === "minimax_code") {
+      this.removeJsonc(i, text, ["mcpServers", OWNED]);
     } else if (i.runtime === "pi") {
       if (hash(JSON.stringify(text)) !== i.owned_entry_checksum)
         fail(409, "CONFIG_CHANGED", "扩展已被修改，请手动检查");
       unlinkSync(i.config_path);
+    } else if (i.runtime === "grok_build") {
+      const entry = this.parseToml(text)?.mcp_servers?.[OWNED];
+      if (entry) {
+        if (hash(JSON.stringify(entry)) !== i.owned_entry_checksum)
+          fail(409, "CONFIG_CHANGED", "本产品条目已被修改，请先人工检查");
+        const next = removeTomlTable(text);
+        if (next === null)
+          fail(409, "CONFIG_CHANGED", "本产品条目已被修改，请先人工检查");
+        atomic(i.config_path, next);
+      }
+    } else if (i.runtime === "hermes") {
+      hermesRemove(i.config_path, text, i.owned_entry_checksum);
     } else {
       const doc = this.parseConfig(i.runtime, text),
         entry =
-          doc[i.runtime === "codex" ? "mcp_servers" : "mcpServers"]?.[
-            "jev-workbench"
-          ];
+          doc[i.runtime === "codex" ? "mcp_servers" : "mcpServers"]?.[OWNED];
       if (entry) {
         if (hash(JSON.stringify(entry)) !== i.owned_entry_checksum)
           fail(409, "CONFIG_CHANGED", "本产品条目已被修改，请先人工检查");
         const args =
           i.runtime === "codex"
-            ? ["mcp", "remove", "jev-workbench"]
-            : ["mcp", "remove", "--scope", i.scope, "jev-workbench"];
-        await exec(commands[i.runtime as Runtime], args, {
+            ? ["mcp", "remove", OWNED]
+            : ["mcp", "remove", "--scope", i.scope, OWNED];
+        const cli = detectCommands[i.runtime as Runtime];
+        if (!cli) fail(422, "CONFIG_INVALID", "此运行端不支持自动写入 MCP。请安装 Skill。");
+        await exec(cli, args, {
           cwd: i.project ?? homedir(),
           timeout: 10000,
           maxBuffer: 16384,
         });
         const after = this.parseConfig(i.runtime, this.read(i.config_path));
         if (
-          after[i.runtime === "codex" ? "mcp_servers" : "mcpServers"]?.[
-            "jev-workbench"
-          ]
+          after[i.runtime === "codex" ? "mcp_servers" : "mcpServers"]?.[OWNED]
         )
           fail(409, "CONFIG_CHANGED", "CLI 未移除配置条目");
       }
@@ -453,4 +526,104 @@ export class Integrations {
     audit(this.db, "remove", "integration", id);
     return { ok: true };
   }
+  private removeJsonc(i: any, text: string, segments: string[]) {
+    const errors: any[] = [];
+    const doc = parse(text, errors, { allowTrailingComma: true });
+    let cursor: any = doc;
+    for (let n = 0; n < segments.length - 1; n++)
+      cursor = cursor?.[segments[n]];
+    const entry = cursor?.[segments[segments.length - 1]];
+    if (
+      errors.length ||
+      !entry ||
+      hash(JSON.stringify(entry)) !== i.owned_entry_checksum
+    )
+      fail(409, "CONFIG_CHANGED", "本产品条目已被修改，无法安全撤销");
+    atomic(
+      i.config_path,
+      applyEdits(text, modify(text, segments, undefined, {})),
+    );
+  }
+}
+function scopeRoot(scope: "user" | "project", project?: string) {
+  return scope === "project" ? project! : homedir();
+}
+function envDir(name: string) {
+  const value = process.env[name]?.trim();
+  return value ? value : "";
+}
+function grokDir(scope: "user" | "project", project?: string) {
+  if (scope === "project") return join(project!, ".grok");
+  return envDir("GROK_HOME") || join(homedir(), ".grok");
+}
+function hermesDir(scope: "user" | "project", project?: string) {
+  if (scope === "project") return join(project!, ".hermes");
+  return envDir("HERMES_HOME") || join(homedir(), ".hermes");
+}
+function minimaxDir(scope: "user" | "project", project?: string) {
+  if (scope === "project") return join(project!, ".minimax");
+  return (
+    envDir("MINIMAX_DATA_DIR") ||
+    envDir("MAVIS_DATA_DIR") ||
+    join(homedir(), ".minimax")
+  );
+}
+function opencodePath(scope: "user" | "project", project?: string) {
+  const path = join(
+    scopeRoot(scope, project),
+    scope === "user" ? ".config/opencode/opencode.jsonc" : "opencode.jsonc",
+  );
+  const alternate = path.replace(/jsonc$/, "json");
+  return !existsSync(path) && existsSync(alternate) ? alternate : path;
+}
+function grokTable(cmd: string[]) {
+  return `[mcp_servers.${OWNED}]\ncommand = ${JSON.stringify(cmd[0])}\nargs = [${cmd
+    .slice(1)
+    .map((s) => JSON.stringify(s))
+    .join(", ")}]\n`;
+}
+function appendToml(text: string, block: string) {
+  const body = text.replace(/\s+$/, "");
+  return (body ? body + "\n\n" : "") + block;
+}
+function removeTomlTable(text: string) {
+  const re = /^\[mcp_servers\.(?:"jev-workbench"|jev-workbench)\][ \t]*\r?\n/m;
+  const match = re.exec(text);
+  if (!match) return null;
+  const start = match.index;
+  const afterHeader = start + match[0].length;
+  const rest = text.slice(afterHeader);
+  const next = rest.search(/^[ \t]*\[/m);
+  const end = next < 0 ? text.length : afterHeader + next;
+  return (text.slice(0, start) + text.slice(end)).replace(/\n{3,}/g, "\n\n");
+}
+function hermesUpsert(before: string, entry: Record<string, unknown>) {
+  const src = before.trim() ? before : "mcp_servers: {}\n";
+  const doc = YAML.parseDocument(src);
+  if (doc.errors.length)
+    fail(422, "CONFIG_INVALID", "Hermes 配置不是有效 YAML");
+  const servers = doc.get("mcp_servers");
+  if (servers != null && typeof servers !== "object")
+    fail(422, "CONFIG_INVALID", "Hermes 配置不是有效 YAML");
+  if (doc.getIn(["mcp_servers", OWNED]) != null)
+    fail(409, "CONFIG_CHANGED", "已有 jev-workbench 条目，请先检查或撤销");
+  doc.setIn(["mcp_servers", OWNED], entry);
+  return { after: String(doc), entry };
+}
+function hermesRemove(path: string, text: string, checksum: string) {
+  let parsed: any;
+  try {
+    parsed = YAML.parse(text || "") ?? {};
+  } catch {
+    fail(422, "CONFIG_INVALID", "现有配置无法解析，请先修正配置文件");
+  }
+  const entry = parsed.mcp_servers?.[OWNED];
+  if (!entry) return;
+  if (hash(JSON.stringify(entry)) !== checksum)
+    fail(409, "CONFIG_CHANGED", "本产品条目已被修改，请先人工检查");
+  const doc = YAML.parseDocument(text);
+  if (doc.errors.length)
+    fail(422, "CONFIG_INVALID", "现有配置无法解析，请先修正配置文件");
+  doc.deleteIn(["mcp_servers", OWNED]);
+  atomic(path, String(doc));
 }

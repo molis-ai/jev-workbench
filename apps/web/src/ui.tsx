@@ -9,7 +9,7 @@ export function Button({
   className = "",
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "default" | "primary" | "danger";
+  variant?: "default" | "primary" | "danger" | "quiet";
 }) {
   return <button className={`button ${variant} ${className}`} {...props} />;
 }
@@ -65,9 +65,9 @@ export function Drawer({
           <header>
             <Dialog.Title>{title}</Dialog.Title>
             <Dialog.Close asChild>
-              <Button aria-label={tr("关闭")}>
-                <X size={18} />
-              </Button>
+              <button className="icon-button" aria-label={tr("关闭")}>
+                <X size={16} />
+              </button>
             </Dialog.Close>
           </header>
           <Dialog.Description className="sr-only">

@@ -357,7 +357,7 @@ export function ConfigForms({
             </Field>
             {q.type === "choice" ? (
               <>
-                <div className="row muted">
+                <div className="row criteria-head">
                   <span>{tr("稳定返回值")}</span>
                   <span>{tr("判断标准")}</span>
                 </div>

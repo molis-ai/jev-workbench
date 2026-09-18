@@ -36,7 +36,9 @@ export function Connections({
     [editing, setEditing] = useState<string | null>(null),
     [officialInvoke, setOfficialInvoke] = useState(false),
     [skillPlan, setSkillPlan] = useState<any>(null);
-  const published = functions.filter((f) => f.active_version && !f.archived_at && !f.deleted_at);
+  const published = functions.filter(
+    (f) => f.active_version && !f.archived_at && !f.deleted_at,
+  );
   const clients = useQuery({
     queryKey: ["clients"],
     queryFn: () => api("/clients"),
@@ -153,671 +155,697 @@ export function Connections({
     </div>
   );
   return (
-    <>
-      <div className="page-heading">
+    <div className="page">
+      <header className="page-head">
         <div>
           <h1>{tr("调用与接入")}</h1>
           <p>{tr("业务服务和 Agent，共享已发布的判断函数。")}</p>
         </div>
-      </div>
-      <div className="tabs page-tabs">
-        {["API 调用", "Agent 接入"].map((t) => (
-          <button
-            key={tr(t)}
-            className={tab === t ? "selected" : ""}
-            onClick={() => setTab(t)}
-          >
-            {tr(t)}
-          </button>
-        ))}
-      </div>
-      {error && <Notice error>{error}</Notice>}
-      {message && <Notice>{tr(message)}</Notice>}
-      {[clients, installations, skillInstalls, detection, detail]
-        .filter((q) => q.isError)
-        .map((q, i) => (
-          <Notice key={i} error>
-            {q.error?.message}{" "}
-            <Button onClick={() => q.refetch()}>{tr("重试")}</Button>
-          </Notice>
-        ))}
-      {tab === "API 调用" ? (
-        <>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>{tr("接口文档")}</h2>
-            </div>
-            <div className="panel-body">
-              <ApiReference origin={location.origin} />
-            </div>
-          </section>
-          <section className="panel">
-            <div className="panel-body stack">
-              <div className="row">
-                <Field label={tr("已发布函数")}>
-                  <select
-                    value={selected}
-                    onChange={(e) => {
-                      setSelected(e.target.value);
-                      setVersion(
-                        functions.find((f) => f.id === e.target.value)
-                          ?.active_version ?? 0,
-                      );
-                    }}
-                  >
-                    <option value="">{tr("选择已发布函数")}</option>
-                    {published.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.display_name} · {f.function_key}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label={tr("固定调用版本")}>
-                  <select
-                    value={version}
-                    onChange={(e) => setVersion(Number(e.target.value))}
-                  >
-                    <option value={0}>{tr("选择版本")}</option>
-                    {detail.data?.releases.map((r: any) => (
-                      <option key={r.version} value={r.version}>
-                        v{r.version} · {r.config.model}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
+      </header>
+      <div className="page-body pad-top">
+        <div className="tabs page-tabs">
+          {["API 调用", "Agent 接入"].map((t) => (
+            <button
+              key={tr(t)}
+              className={tab === t ? "selected" : ""}
+              onClick={() => setTab(t)}
+            >
+              {tr(t)}
+            </button>
+          ))}
+        </div>
+        {error && <Notice error>{error}</Notice>}
+        {message && <Notice>{tr(message)}</Notice>}
+        {[clients, installations, skillInstalls, detection, detail]
+          .filter((q) => q.isError)
+          .map((q, i) => (
+            <Notice key={i} error>
+              {q.error?.message}{" "}
+              <Button onClick={() => q.refetch()}>{tr("重试")}</Button>
+            </Notice>
+          ))}
+        {tab === "API 调用" ? (
+          <>
+            <section className="panel">
+              <div className="panel-title">
+                <h2>{tr("接口文档")}</h2>
               </div>
-              {c && (
-                <div className="endpoint">
-                  <span>POST</span>
-                  <code>{endpoint}</code>
-                </div>
-              )}
-              <div className="row between">
-                <div className="mini-tabs">
-                  {["cURL", "Python", "TypeScript"].map((t) => (
-                    <button
-                      key={tr(t)}
-                      className={lang === t ? "selected" : ""}
-                      onClick={() => setLang(t)}
+              <div className="panel-body">
+                <ApiReference origin={location.origin} />
+              </div>
+            </section>
+            <section className="panel">
+              <div className="panel-body stack">
+                <div className="row">
+                  <Field label={tr("已发布函数")}>
+                    <select
+                      value={selected}
+                      onChange={(e) => {
+                        setSelected(e.target.value);
+                        setVersion(
+                          functions.find((f) => f.id === e.target.value)
+                            ?.active_version ?? 0,
+                        );
+                      }}
                     >
-                      {tr(t)}
-                    </button>
-                  ))}
+                      <option value="">{tr("选择已发布函数")}</option>
+                      {published.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.display_name} · {f.function_key}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label={tr("固定调用版本")}>
+                    <select
+                      value={version}
+                      onChange={(e) => setVersion(Number(e.target.value))}
+                    >
+                      <option value={0}>{tr("选择版本")}</option>
+                      {detail.data?.releases.map((r: any) => (
+                        <option key={r.version} value={r.version}>
+                          v{r.version} · {r.config.model}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
                 </div>
+                {c && (
+                  <div className="endpoint">
+                    <span>POST</span>
+                    <code>{endpoint}</code>
+                  </div>
+                )}
+                <div className="row between">
+                  <div className="mini-tabs">
+                    {["cURL", "Python", "TypeScript"].map((t) => (
+                      <button
+                        key={tr(t)}
+                        className={lang === t ? "selected" : ""}
+                        onClick={() => setLang(t)}
+                      >
+                        {tr(t)}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    onClick={() =>
+                      task(async () => {
+                        await navigator.clipboard.writeText(code);
+                        setMessage(tr("调用示例已复制"));
+                      })
+                    }
+                  >
+                    <Copy size={14} />
+                    {tr("复制")}
+                  </Button>
+                </div>
+                <pre className="code-block">{code}</pre>
+                {c && (
+                  <details>
+                    <summary>{tr("输入与输出合同")}</summary>
+                    <JsonEditor
+                      value={pretty({
+                        input_schema: c.input_schema,
+                        output_schema: c.output_schema,
+                      })}
+                      readOnly
+                    />
+                  </details>
+                )}
+              </div>
+            </section>
+            <section className="panel">
+              <div className="panel-title">
+                <h2>{tr("客户端凭证")}</h2>
                 <Button
+                  variant="primary"
+                  onClick={() => {
+                    setEditing(null);
+                    setGrants([]);
+                    setName("");
+                    setOfficialInvoke(false);
+                    setDrawer(true);
+                  }}
+                >
+                  <KeyRound size={15} />
+                  {tr("创建凭证")}
+                </Button>
+              </div>
+              <div className="panel-body stack">
+                {clients.data?.length === 0 ? (
+                  <p className="muted">
+                    {tr(
+                      "尚无客户端凭证。每个调用方使用独立授权，便于撤销和归因。",
+                    )}
+                  </p>
+                ) : (
+                  clients.data?.map((cl: any) => (
+                    <div className="record" key={cl.id}>
+                      <div>
+                        <strong>
+                          {cl.name} <span className="badge">{cl.kind}</span>
+                        </strong>
+                        <span>
+                          {cl.revoked_at
+                            ? tr("已撤销")
+                            : cl.token_prefix + "••••"}
+                        </span>
+                      </div>
+                      <small>
+                        {[
+                          cl.official_invoke ? tr("官方 Jev") : null,
+                          cl.grants
+                            .map(
+                              (g: any) =>
+                                `${g.function_key}@${g.pinned_version ?? "default"}`,
+                            )
+                            .join("，") || tr("无函数授权"),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}{" "}
+                        {tr("· 最近调用")}{" "}
+                        {cl.last_seen_at
+                          ? dateTime(cl.last_seen_at)
+                          : tr("尚无")}
+                      </small>
+                      {!cl.revoked_at && (
+                        <div className="row">
+                          <Button
+                            onClick={() => {
+                              setEditing(cl.id);
+                              setName(cl.name);
+                              setOfficialInvoke(!!cl.official_invoke);
+                              setGrants(
+                                cl.grants.map((g: any) => ({
+                                  function_id: g.function_id,
+                                  pinned_version: g.pinned_version,
+                                })),
+                              );
+                              setDrawer(true);
+                            }}
+                          >
+                            {tr("编辑授权")}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            disabled={busy}
+                            onClick={() =>
+                              task(async () => {
+                                await api(
+                                  `/clients/${cl.id}/revoke`,
+                                  "POST",
+                                  {},
+                                );
+                                await clients.refetch();
+                              })
+                            }
+                          >
+                            {tr("撤销")}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+            <section className="panel">
+              <div className="panel-title">
+                <h2>
+                  {demoMode ? tr("测试模拟 API 调用") : tr("测试真实 API 调用")}
+                </h2>
+              </div>
+              <div className="panel-body stack">
+                <p className="muted">
+                  {demoMode
+                    ? tr("使用受限客户端 Token 校验；离线模拟，不计费。")
+                    : tr(
+                        "使用受限客户端 Token 校验，发送至 TypeSafe，可能计费。",
+                      )}
+                  {tr("测试后会清除输入凭证。")}
+                </p>
+                <Field label={tr("客户端 Token")}>
+                  <input
+                    type="password"
+                    autoComplete="off"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                  />
+                </Field>
+                <JsonEditor
+                  value={input}
+                  onChange={setInput}
+                  label={tr("业务 API 输入 JSON")}
+                />
+                <Button
+                  disabled={busy || !c || !token}
                   onClick={() =>
                     task(async () => {
-                      await navigator.clipboard.writeText(code);
-                      setMessage(tr("调用示例已复制"));
+                      try {
+                        const r = await fetch(endpoint, {
+                          method: "POST",
+                          headers: {
+                            Authorization: "Bearer " + token,
+                            "Accept-Language": getLanguage(),
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            version,
+                            input: JSON.parse(input),
+                          }),
+                          signal: AbortSignal.timeout(35000),
+                        });
+                        setResult(await r.json());
+                      } finally {
+                        setToken("");
+                      }
                     })
                   }
                 >
-                  <Copy size={14} />
-                  {tr("复制")}
+                  {tr("调用所选发布版本")}
                 </Button>
+                {result && <JsonEditor readOnly value={pretty(result)} />}
               </div>
-              <pre className="code-block">{code}</pre>
-              {c && (
-                <details>
-                  <summary>{tr("输入与输出合同")}</summary>
-                  <JsonEditor
-                    value={pretty({
-                      input_schema: c.input_schema,
-                      output_schema: c.output_schema,
-                    })}
-                    readOnly
-                  />
-                </details>
-              )}
-            </div>
-          </section>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>{tr("客户端凭证")}</h2>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setEditing(null);
-                  setGrants([]);
-                  setName("");
-                  setOfficialInvoke(false);
-                  setDrawer(true);
-                }}
-              >
-                <KeyRound size={15} />
-                {tr("创建凭证")}
-              </Button>
-            </div>
-            <div className="panel-body stack">
-              {clients.data?.length === 0 ? (
+            </section>
+          </>
+        ) : (
+          <>
+            <section className="runtime-grid">
+              {[
+                ["claude_code", "Claude Code", "MCP · stdio"],
+                ["codex", "Codex", "MCP · stdio"],
+                ["opencode", "OpenCode", "MCP · stdio"],
+                ["pi", "Pi", "原生工具扩展"],
+                ["gemini", "Gemini CLI", "MCP · JSON"],
+                ["grok_build", "Grok Build", "MCP · TOML"],
+                ["hermes", "Hermes", "MCP · YAML"],
+                ["minimax_code", "MiniMax Code", "MCP · JSON"],
+                ["openclaw", "OpenClaw", "仅 Skill"],
+              ].map(([key, label, desc]) => (
+                <button
+                  key={key}
+                  className={"runtime " + (runtime === key ? "selected" : "")}
+                  onClick={() => {
+                    setRuntime(key);
+                    setPlan(null);
+                    setSkillPlan(null);
+                  }}
+                >
+                  <Terminal size={22} />
+                  <strong>{label}</strong>
+                  <span>{tr(desc)}</span>
+                  <small>
+                    {detection.data?.find((d: any) => d.runtime === key)
+                      ?.version ?? tr("未检测到 CLI")}
+                  </small>
+                </button>
+              ))}
+            </section>
+            <section className="panel">
+              <div className="panel-title">
+                <h2>
+                  {
+                    {
+                      claude_code: "Claude Code",
+                      codex: "Codex",
+                      opencode: "OpenCode",
+                      pi: "Pi",
+                      gemini: "Gemini CLI",
+                      grok_build: "Grok Build",
+                      hermes: "Hermes",
+                      minimax_code: "MiniMax Code",
+                      openclaw: "OpenClaw",
+                    }[runtime]
+                  }
+                </h2>
+              </div>
+              <div className="panel-body stack">
+                {runtime !== "openclaw" && <GrantPicker />}
+                <div className="row">
+                  <Field label={tr("配置范围")}>
+                    <select
+                      value={scope}
+                      onChange={(e) => setScope(e.target.value)}
+                    >
+                      <option value="user">{tr("用户范围")}</option>
+                      <option value="project">{tr("指定项目")}</option>
+                    </select>
+                  </Field>
+                  {scope === "project" && (
+                    <Field label={tr("项目绝对路径")}>
+                      <input
+                        value={project}
+                        onChange={(e) => setProject(e.target.value)}
+                        placeholder="/Users/you/code/project"
+                      />
+                    </Field>
+                  )}
+                </div>
+                {runtime === "openclaw" ? (
+                  <Notice>
+                    {tr("此运行端不支持自动写入 MCP。请安装 Skill。")}
+                  </Notice>
+                ) : (
+                  <Button
+                    disabled={busy}
+                    variant="primary"
+                    onClick={() =>
+                      task(async () =>
+                        setPlan(
+                          await api("/integrations/plan", "POST", {
+                            runtime,
+                            scope,
+                            ...(scope === "project" ? { project } : {}),
+                            grants,
+                          }),
+                        ),
+                      )
+                    }
+                  >
+                    {tr("生成接入变更")}
+                  </Button>
+                )}
+                {plan && (
+                  <>
+                    <Notice>
+                      {plan.supported
+                        ? tr("确认后只写入本产品条目，保留其他配置。")
+                        : tr(plan.reason)}
+                    </Notice>
+                    <code className="break">{plan.path}</code>
+                    <details>
+                      <summary>{tr("原配置")}</summary>
+                      <pre>{plan.before || tr("文件尚不存在")}</pre>
+                    </details>
+                    <h3>{tr("将写入的配置 / 命令")}</h3>
+                    <pre className="code-block">{plan.after}</pre>
+                    <Button
+                      disabled={busy}
+                      onClick={() =>
+                        task(async () => {
+                          const r = await api("/integrations/apply", "POST", {
+                            plan_id: plan.plan_id,
+                          });
+                          setPlan(null);
+                          setResult(r);
+                          setMessage(
+                            r.status === "configured"
+                              ? tr("配置已写入，请执行连接测试。")
+                              : tr(
+                                  "凭证文件已准备，执行下方命令后在目标 Agent 内验证。",
+                                ),
+                          );
+                          await installations.refetch();
+                          await clients.refetch();
+                        })
+                      }
+                    >
+                      {plan.supported
+                        ? tr("确认并应用变更")
+                        : tr("创建凭证并准备命令")}
+                    </Button>
+                  </>
+                )}
+                {result?.command && (
+                  <pre className="code-block">
+                    {result.command
+                      .map((s: string) => "'" + s.replace(/'/g, "'\\''") + "'")
+                      .join(" ")}
+                  </pre>
+                )}
+              </div>
+            </section>
+            <section className="panel">
+              <div className="panel-title">
+                <h2>{tr("Jev Workbench skill")}</h2>
+              </div>
+              <div className="panel-body stack">
                 <p className="muted">
                   {tr(
-                    "尚无客户端凭证。每个调用方使用独立授权，便于撤销和归因。",
+                    "安装本服务的 skill：说明 HTTP / MCP 接口，并要求 Agent 先向本机列出可用函数再调用。与 MCP 一起构成一站式接入。确认前不改运行端。",
                   )}
                 </p>
-              ) : (
-                clients.data?.map((cl: any) => (
-                  <div className="record" key={cl.id}>
-                    <div>
-                      <strong>
-                        {cl.name} <span className="badge">{cl.kind}</span>
-                      </strong>
-                      <span>
-                        {cl.revoked_at
-                          ? tr("已撤销")
-                          : cl.token_prefix + "••••"}
-                      </span>
-                    </div>
-                    <small>
-                      {[
-                        cl.official_invoke ? tr("官方 Jev") : null,
-                        cl.grants
-                          .map(
-                            (g: any) =>
-                              `${g.function_key}@${g.pinned_version ?? "default"}`,
-                          )
-                          .join("，") || tr("无函数授权"),
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}{" "}
-                      {tr("· 最近调用")}{" "}
-                      {cl.last_seen_at ? dateTime(cl.last_seen_at) : tr("尚无")}
-                    </small>
-                    {!cl.revoked_at && (
+                <Button
+                  disabled={busy}
+                  onClick={() =>
+                    task(async () =>
+                      setSkillPlan(
+                        await api("/skills/plan", "POST", {
+                          runtime,
+                          scope,
+                          skill: "jev-workbench",
+                          ...(scope === "project" ? { project } : {}),
+                        }),
+                      ),
+                    )
+                  }
+                >
+                  {tr("预览 Workbench Skill")}
+                </Button>
+                {skillPlan?.skill === "jev-workbench" && (
+                  <>
+                    <Notice>
+                      {skillPlan.supported
+                        ? tr("确认后只写入本产品条目，保留其他配置。")
+                        : tr(skillPlan.reason)}
+                    </Notice>
+                    <pre className="code-block">{skillPlan.after}</pre>
+                    {skillPlan.supported && (
+                      <Button
+                        disabled={busy}
+                        variant="primary"
+                        onClick={() =>
+                          task(async () => {
+                            await api("/skills/apply", "POST", {
+                              plan_id: skillPlan.plan_id,
+                            });
+                            setSkillPlan(null);
+                            setMessage(tr("Workbench Skill 已安装"));
+                            await skillInstalls.refetch();
+                          })
+                        }
+                      >
+                        {tr("确认安装 Workbench Skill")}
+                      </Button>
+                    )}
+                  </>
+                )}
+                {skillInstalls.data?.filter(
+                  (s: any) =>
+                    s.status !== "removed" && s.skill_name === "jev-workbench",
+                ).length ? (
+                  skillInstalls.data
+                    .filter(
+                      (s: any) =>
+                        s.status !== "removed" &&
+                        s.skill_name === "jev-workbench",
+                    )
+                    .map((s: any) => (
+                      <div className="record" key={s.id}>
+                        <div>
+                          <strong>
+                            {s.skill_name} · {s.runtime} · {s.scope}
+                          </strong>
+                          <span className="badge">{tr("已写入")}</span>
+                        </div>
+                        <div className="row">
+                          <Button
+                            disabled={busy}
+                            variant="danger"
+                            onClick={() =>
+                              task(async () => {
+                                await api(`/skills/${s.id}/remove`, "POST", {});
+                                setMessage(tr("Skill 已卸载"));
+                                await skillInstalls.refetch();
+                              })
+                            }
+                          >
+                            {tr("卸载 Skill")}
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <p className="muted">{tr("尚未安装 Workbench Skill。")}</p>
+                )}
+              </div>
+            </section>
+            <section className="panel">
+              <div className="panel-title">
+                <h2>{tr("TypeSafe skill（可选）")}</h2>
+              </div>
+              <div className="panel-body stack">
+                <p className="muted">
+                  {tr(
+                    "安装官方 typesafe-ai skill，让 Agent 按 TypeSafe 文档设计判断。不安装也能通过本工作台的 MCP / HTTP 调用函数。确认前不会改任何运行端。",
+                  )}
+                </p>
+                <Button
+                  disabled={busy}
+                  onClick={() =>
+                    task(async () =>
+                      setSkillPlan(
+                        await api("/skills/plan", "POST", {
+                          runtime,
+                          scope,
+                          skill: "typesafe-ai",
+                          ...(scope === "project" ? { project } : {}),
+                        }),
+                      ),
+                    )
+                  }
+                >
+                  {tr("预览 Skill 安装")}
+                </Button>
+                {skillPlan?.skill === "typesafe-ai" && (
+                  <>
+                    <Notice>
+                      {skillPlan.supported
+                        ? tr("确认后只写入本产品条目，保留其他配置。")
+                        : tr(skillPlan.reason)}
+                    </Notice>
+                    <pre className="code-block">{skillPlan.after}</pre>
+                    {skillPlan.supported && (
+                      <Button
+                        disabled={busy}
+                        variant="primary"
+                        onClick={() =>
+                          task(async () => {
+                            await api("/skills/apply", "POST", {
+                              plan_id: skillPlan.plan_id,
+                            });
+                            setSkillPlan(null);
+                            setMessage(tr("官方 Skill 已安装"));
+                            await skillInstalls.refetch();
+                          })
+                        }
+                      >
+                        {tr("确认安装官方 Skill")}
+                      </Button>
+                    )}
+                  </>
+                )}
+                {skillInstalls.data?.filter(
+                  (s: any) =>
+                    s.status !== "removed" && s.skill_name === "typesafe-ai",
+                ).length ? (
+                  skillInstalls.data
+                    .filter(
+                      (s: any) =>
+                        s.status !== "removed" &&
+                        s.skill_name === "typesafe-ai",
+                    )
+                    .map((s: any) => (
+                      <div className="record" key={s.id}>
+                        <div>
+                          <strong>
+                            {s.skill_name} · {s.runtime} · {s.scope}
+                          </strong>
+                          <span className="badge">{tr("已写入")}</span>
+                        </div>
+                        <div className="row">
+                          <Button
+                            disabled={busy}
+                            variant="danger"
+                            onClick={() =>
+                              task(async () => {
+                                await api(`/skills/${s.id}/remove`, "POST", {});
+                                setMessage(tr("Skill 已卸载"));
+                                await skillInstalls.refetch();
+                              })
+                            }
+                          >
+                            {tr("卸载 Skill")}
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <p className="muted">{tr("尚未安装官方 Skill。")}</p>
+                )}
+              </div>
+            </section>
+            <section className="panel">
+              <div className="panel-title">
+                <h2>{tr("已准备的接入")}</h2>
+              </div>
+              <div className="panel-body stack">
+                {installations.data?.length === 0 ? (
+                  <p>{tr("尚无接入配置。")}</p>
+                ) : (
+                  installations.data?.map((i: any) => (
+                    <div className="record" key={i.id}>
+                      <div>
+                        <strong>
+                          {i.runtime} · {i.scope}
+                        </strong>
+                        <span className="badge">
+                          {i.status === "configured"
+                            ? tr("已写入")
+                            : i.status === "planned"
+                              ? tr("待执行命令")
+                              : i.status === "removed"
+                                ? tr("已撤销")
+                                : i.status}
+                        </span>
+                      </div>
+                      <code className="break">{i.config_path}</code>
+                      <small>
+                        {i.last_test_status ?? tr("尚未连接测试")}{" "}
+                        {tr("· 连接测试不会进行付费推理。")}
+                      </small>
                       <div className="row">
                         <Button
-                          onClick={() => {
-                            setEditing(cl.id);
-                            setName(cl.name);
-                            setOfficialInvoke(!!cl.official_invoke);
-                            setGrants(
-                              cl.grants.map((g: any) => ({
-                                function_id: g.function_id,
-                                pinned_version: g.pinned_version,
-                              })),
-                            );
-                            setDrawer(true);
-                          }}
-                        >
-                          {tr("编辑授权")}
-                        </Button>
-                        <Button
-                          variant="danger"
-                          disabled={busy}
+                          disabled={busy || i.status === "removed"}
                           onClick={() =>
                             task(async () => {
-                              await api(`/clients/${cl.id}/revoke`, "POST", {});
+                              const r = await api(
+                                `/integrations/${i.id}/test`,
+                                "POST",
+                                {},
+                              );
+                              setMessage(tr(r.message));
+                              await installations.refetch();
+                            })
+                          }
+                        >
+                          {tr("测试连接")}
+                        </Button>
+                        <Button
+                          disabled={busy || i.status === "removed"}
+                          onClick={() =>
+                            task(async () => {
+                              const r = await api(
+                                `/integrations/${i.id}/remove`,
+                                "POST",
+                                {},
+                              );
+                              setMessage(
+                                (r.message ? tr(r.message) : undefined) ??
+                                  tr("接入已撤销，其他条目保留"),
+                              );
+                              await installations.refetch();
                               await clients.refetch();
                             })
                           }
                         >
-                          {tr("撤销")}
+                          {tr("撤销接入")}
                         </Button>
                       </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>
-                {demoMode ? tr("测试模拟 API 调用") : tr("测试真实 API 调用")}
-              </h2>
-            </div>
-            <div className="panel-body stack">
-              <p className="muted">
-                {demoMode
-                  ? tr("使用受限客户端 Token 校验；离线模拟，不计费。")
-                  : tr(
-                      "使用受限客户端 Token 校验，发送至 TypeSafe，可能计费。",
-                    )}
-                {tr("测试后会清除输入凭证。")}
-              </p>
-              <Field label={tr("客户端 Token")}>
-                <input
-                  type="password"
-                  autoComplete="off"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                />
-              </Field>
-              <JsonEditor
-                value={input}
-                onChange={setInput}
-                label={tr("业务 API 输入 JSON")}
-              />
-              <Button
-                disabled={busy || !c || !token}
-                onClick={() =>
-                  task(async () => {
-                    try {
-                      const r = await fetch(endpoint, {
-                        method: "POST",
-                        headers: {
-                          Authorization: "Bearer " + token,
-                          "Accept-Language": getLanguage(),
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          version,
-                          input: JSON.parse(input),
-                        }),
-                        signal: AbortSignal.timeout(35000),
-                      });
-                      setResult(await r.json());
-                    } finally {
-                      setToken("");
-                    }
-                  })
-                }
-              >
-                {tr("调用所选发布版本")}
-              </Button>
-              {result && <JsonEditor readOnly value={pretty(result)} />}
-            </div>
-          </section>
-        </>
-      ) : (
-        <>
-          <section className="runtime-grid">
-            {[
-              ["claude_code", "Claude Code", "MCP · stdio"],
-              ["codex", "Codex", "MCP · stdio"],
-              ["opencode", "OpenCode", "MCP · stdio"],
-              ["pi", "Pi", "原生工具扩展"],
-            ].map(([key, label, desc]) => (
-              <button
-                key={key}
-                className={"runtime " + (runtime === key ? "selected" : "")}
-                onClick={() => {
-                  setRuntime(key);
-                  setPlan(null);
-                }}
-              >
-                <Terminal size={22} />
-                <strong>{label}</strong>
-                <span>{tr(desc)}</span>
-                <small>
-                  {detection.data?.find((d: any) => d.runtime === key)
-                    ?.version ?? tr("未检测到 CLI")}
-                </small>
-              </button>
-            ))}
-          </section>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>
-                {
-                  {
-                    claude_code: "Claude Code",
-                    codex: "Codex",
-                    opencode: "OpenCode",
-                    pi: "Pi",
-                  }[runtime]
-                }
-              </h2>
-            </div>
-            <div className="panel-body stack">
-              <GrantPicker />
-              <div className="row">
-                <Field label={tr("配置范围")}>
-                  <select
-                    value={scope}
-                    onChange={(e) => setScope(e.target.value)}
-                  >
-                    <option value="user">{tr("用户范围")}</option>
-                    <option value="project">{tr("指定项目")}</option>
-                  </select>
-                </Field>
-                {scope === "project" && (
-                  <Field label={tr("项目绝对路径")}>
-                    <input
-                      value={project}
-                      onChange={(e) => setProject(e.target.value)}
-                      placeholder="/Users/you/code/project"
-                    />
-                  </Field>
+                    </div>
+                  ))
                 )}
               </div>
-              <Button
-                disabled={busy}
-                variant="primary"
-                onClick={() =>
-                  task(async () =>
-                    setPlan(
-                      await api("/integrations/plan", "POST", {
-                        runtime,
-                        scope,
-                        ...(scope === "project" ? { project } : {}),
-                        grants,
-                      }),
-                    ),
-                  )
-                }
-              >
-                {tr("生成接入变更")}
-              </Button>
-              {plan && (
-                <>
-                  <Notice>
-                    {plan.supported
-                      ? tr("确认后只写入本产品条目，保留其他配置。")
-                      : tr(plan.reason)}
-                  </Notice>
-                  <code className="break">{plan.path}</code>
-                  <details>
-                    <summary>{tr("原配置")}</summary>
-                    <pre>{plan.before || tr("文件尚不存在")}</pre>
-                  </details>
-                  <h3>{tr("将写入的配置 / 命令")}</h3>
-                  <pre className="code-block">{plan.after}</pre>
-                  <Button
-                    disabled={busy}
-                    onClick={() =>
-                      task(async () => {
-                        const r = await api("/integrations/apply", "POST", {
-                          plan_id: plan.plan_id,
-                        });
-                        setPlan(null);
-                        setResult(r);
-                        setMessage(
-                          r.status === "configured"
-                            ? tr("配置已写入，请执行连接测试。")
-                            : tr(
-                                "凭证文件已准备，执行下方命令后在目标 Agent 内验证。",
-                              ),
-                        );
-                        await installations.refetch();
-                        await clients.refetch();
-                      })
-                    }
-                  >
-                    {plan.supported
-                      ? tr("确认并应用变更")
-                      : tr("创建凭证并准备命令")}
-                  </Button>
-                </>
+            </section>
+            <Notice>
+              {tr(
+                "目标 Agent 需重新加载配置。桥初始化通过不代表 Agent 已调用模型；真实执行结果可在调用记录中查看。",
               )}
-              {result?.command && (
-                <pre className="code-block">
-                  {result.command
-                    .map((s: string) => "'" + s.replace(/'/g, "'\\''") + "'")
-                    .join(" ")}
-                </pre>
-              )}
-            </div>
-          </section>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>{tr("Jev Workbench skill")}</h2>
-            </div>
-            <div className="panel-body stack">
-              <p className="muted">
-                {tr(
-                  "安装本服务的 skill：说明 HTTP / MCP 接口，并要求 Agent 先向本机列出可用函数再调用。与 MCP 一起构成一站式接入。确认前不改运行端。",
-                )}
-              </p>
-              <Button
-                disabled={busy}
-                onClick={() =>
-                  task(async () =>
-                    setSkillPlan(
-                      await api("/skills/plan", "POST", {
-                        runtime,
-                        scope,
-                        skill: "jev-workbench",
-                        ...(scope === "project" ? { project } : {}),
-                      }),
-                    ),
-                  )
-                }
-              >
-                {tr("预览 Workbench Skill")}
-              </Button>
-              {skillPlan?.skill === "jev-workbench" && (
-                <>
-                  <Notice>
-                    {skillPlan.supported
-                      ? tr("确认后只写入本产品条目，保留其他配置。")
-                      : tr(skillPlan.reason)}
-                  </Notice>
-                  <pre className="code-block">{skillPlan.after}</pre>
-                  {skillPlan.supported && (
-                    <Button
-                      disabled={busy}
-                      variant="primary"
-                      onClick={() =>
-                        task(async () => {
-                          await api("/skills/apply", "POST", {
-                            plan_id: skillPlan.plan_id,
-                          });
-                          setSkillPlan(null);
-                          setMessage(tr("Workbench Skill 已安装"));
-                          await skillInstalls.refetch();
-                        })
-                      }
-                    >
-                      {tr("确认安装 Workbench Skill")}
-                    </Button>
-                  )}
-                </>
-              )}
-              {skillInstalls.data?.filter(
-                (s: any) =>
-                  s.status !== "removed" && s.skill_name === "jev-workbench",
-              ).length ? (
-                skillInstalls.data
-                  .filter(
-                    (s: any) =>
-                      s.status !== "removed" &&
-                      s.skill_name === "jev-workbench",
-                  )
-                  .map((s: any) => (
-                    <div className="record" key={s.id}>
-                      <div>
-                        <strong>
-                          {s.skill_name} · {s.runtime} · {s.scope}
-                        </strong>
-                        <span className="badge">{tr("已写入")}</span>
-                      </div>
-                      <div className="row">
-                        <Button
-                          disabled={busy}
-                          variant="danger"
-                          onClick={() =>
-                            task(async () => {
-                              await api(`/skills/${s.id}/remove`, "POST", {});
-                              setMessage(tr("Skill 已卸载"));
-                              await skillInstalls.refetch();
-                            })
-                          }
-                        >
-                          {tr("卸载 Skill")}
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <p className="muted">{tr("尚未安装 Workbench Skill。")}</p>
-              )}
-            </div>
-          </section>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>{tr("TypeSafe skill（可选）")}</h2>
-            </div>
-            <div className="panel-body stack">
-              <p className="muted">
-                {tr(
-                  "安装官方 typesafe-ai skill，让 Agent 按 TypeSafe 文档设计判断。不安装也能通过本工作台的 MCP / HTTP 调用函数。确认前不会改任何运行端。",
-                )}
-              </p>
-              <Button
-                disabled={busy}
-                onClick={() =>
-                  task(async () =>
-                    setSkillPlan(
-                      await api("/skills/plan", "POST", {
-                        runtime,
-                        scope,
-                        skill: "typesafe-ai",
-                        ...(scope === "project" ? { project } : {}),
-                      }),
-                    ),
-                  )
-                }
-              >
-                {tr("预览 Skill 安装")}
-              </Button>
-              {skillPlan?.skill === "typesafe-ai" && (
-                <>
-                  <Notice>
-                    {skillPlan.supported
-                      ? tr("确认后只写入本产品条目，保留其他配置。")
-                      : tr(skillPlan.reason)}
-                  </Notice>
-                  <pre className="code-block">{skillPlan.after}</pre>
-                  {skillPlan.supported && (
-                    <Button
-                      disabled={busy}
-                      variant="primary"
-                      onClick={() =>
-                        task(async () => {
-                          await api("/skills/apply", "POST", {
-                            plan_id: skillPlan.plan_id,
-                          });
-                          setSkillPlan(null);
-                          setMessage(tr("官方 Skill 已安装"));
-                          await skillInstalls.refetch();
-                        })
-                      }
-                    >
-                      {tr("确认安装官方 Skill")}
-                    </Button>
-                  )}
-                </>
-              )}
-              {skillInstalls.data?.filter(
-                (s: any) =>
-                  s.status !== "removed" && s.skill_name === "typesafe-ai",
-              ).length ? (
-                skillInstalls.data
-                  .filter(
-                    (s: any) =>
-                      s.status !== "removed" && s.skill_name === "typesafe-ai",
-                  )
-                  .map((s: any) => (
-                    <div className="record" key={s.id}>
-                      <div>
-                        <strong>
-                          {s.skill_name} · {s.runtime} · {s.scope}
-                        </strong>
-                        <span className="badge">{tr("已写入")}</span>
-                      </div>
-                      <div className="row">
-                        <Button
-                          disabled={busy}
-                          variant="danger"
-                          onClick={() =>
-                            task(async () => {
-                              await api(`/skills/${s.id}/remove`, "POST", {});
-                              setMessage(tr("Skill 已卸载"));
-                              await skillInstalls.refetch();
-                            })
-                          }
-                        >
-                          {tr("卸载 Skill")}
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <p className="muted">{tr("尚未安装官方 Skill。")}</p>
-              )}
-            </div>
-          </section>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>{tr("已准备的接入")}</h2>
-            </div>
-            <div className="panel-body stack">
-              {installations.data?.length === 0 ? (
-                <p>{tr("尚无接入配置。")}</p>
-              ) : (
-                installations.data?.map((i: any) => (
-                  <div className="record" key={i.id}>
-                    <div>
-                      <strong>
-                        {i.runtime} · {i.scope}
-                      </strong>
-                      <span className="badge">
-                        {i.status === "configured"
-                          ? tr("已写入")
-                          : i.status === "planned"
-                            ? tr("待执行命令")
-                            : i.status === "removed"
-                              ? tr("已撤销")
-                              : i.status}
-                      </span>
-                    </div>
-                    <code className="break">{i.config_path}</code>
-                    <small>
-                      {i.last_test_status ?? tr("尚未连接测试")}{" "}
-                      {tr("· 连接测试不会进行付费推理。")}
-                    </small>
-                    <div className="row">
-                      <Button
-                        disabled={busy || i.status === "removed"}
-                        onClick={() =>
-                          task(async () => {
-                            const r = await api(
-                              `/integrations/${i.id}/test`,
-                              "POST",
-                              {},
-                            );
-                            setMessage(tr(r.message));
-                            await installations.refetch();
-                          })
-                        }
-                      >
-                        {tr("测试连接")}
-                      </Button>
-                      <Button
-                        disabled={busy || i.status === "removed"}
-                        onClick={() =>
-                          task(async () => {
-                            const r = await api(
-                              `/integrations/${i.id}/remove`,
-                              "POST",
-                              {},
-                            );
-                            setMessage(
-                              (r.message ? tr(r.message) : undefined) ??
-                                tr("接入已撤销，其他条目保留"),
-                            );
-                            await installations.refetch();
-                            await clients.refetch();
-                          })
-                        }
-                      >
-                        {tr("撤销接入")}
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-          <Notice>
-            {tr(
-              "目标 Agent 需重新加载配置。桥初始化通过不代表 Agent 已调用模型；真实执行结果可在调用记录中查看。",
-            )}
-          </Notice>
-        </>
-      )}
+            </Notice>
+          </>
+        )}
+      </div>
       <Drawer
         open={drawer}
         onClose={() => {
@@ -887,6 +915,6 @@ export function Connections({
           )}
         </div>
       </Drawer>
-    </>
+    </div>
   );
 }

@@ -20,6 +20,7 @@ import {
 import { randomUUID } from "node:crypto";
 import { Integrations } from "./integrations";
 import { Skills } from "./skills";
+import { RUNTIME_IDS } from "./runtimes";
 const grants = z.array(
   z
     .object({
@@ -555,7 +556,7 @@ export async function createApp(options: {
     integrations.plan(
       z
         .object({
-          runtime: z.enum(["claude_code", "codex", "opencode", "pi"]),
+          runtime: z.enum(RUNTIME_IDS),
           scope: z.enum(["user", "project"]),
           project: z.string().optional(),
           grants,
@@ -580,7 +581,7 @@ export async function createApp(options: {
     skills.plan(
       z
         .object({
-          runtime: z.enum(["claude_code", "codex", "opencode", "pi"]),
+          runtime: z.enum(RUNTIME_IDS),
           scope: z.enum(["user", "project"]),
           project: z.string().optional(),
           skill: z.enum(["jev-workbench", "typesafe-ai"]),

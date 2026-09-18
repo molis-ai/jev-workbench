@@ -7,7 +7,7 @@ description: Call local Jev Workbench judgment functions over MCP or HTTP. Use w
 
 Jev Workbench is a **local** judgment service. A human configures Noul, Choice, or Score functions in the browser, publishes an immutable version, then **the same functions** are available to:
 
-- AI runtimes (Claude Code, Codex, OpenCode, Pi) through MCP tools and this skill
+- AI runtimes (Claude Code, Codex, OpenCode, Pi, Gemini CLI, Grok Build, Hermes, MiniMax Code, OpenClaw) through MCP tools and this skill
 - Ordinary services through HTTP and a client token
 
 Configure once on this machine. Do not call TypeSafe’s cloud API with the vendor key from the agent. The workbench holds the TypeSafe key and meters calls.

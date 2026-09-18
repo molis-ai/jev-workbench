@@ -20,7 +20,13 @@ it("builds official skills CLI commands and records optional install/remove with
     "-y",
     "-g",
   ]);
-  expect(skillCommand("pi", "user", "add")).toBeNull();
+  expect(skillCommand("pi", "user", "add")?.[8]).toBe("pi");
+  expect(skillCommand("gemini", "user", "add")?.[8]).toBe("gemini-cli");
+  expect(skillCommand("grok_build", "user", "add")?.[8]).toBe("grok");
+  expect(skillCommand("hermes", "user", "add")?.[8]).toBe("hermes-agent");
+  expect(skillCommand("minimax_code", "user", "add")?.[8]).toBe("minimax-code");
+  expect(skillCommand("openclaw", "user", "add")?.[8]).toBe("openclaw");
+  expect(skillCommand("unknown", "user", "add")).toBeNull();
   expect(skillCommand("claude_code", "project", "add", "jev-workbench")).toEqual(
     [
       "npx",
@@ -54,7 +60,7 @@ it("builds official skills CLI commands and records optional install/remove with
   });
   try {
     const unsupported = skills.plan({
-      runtime: "pi",
+      runtime: "unknown",
       scope: "project",
       project,
       skill: "jev-workbench",

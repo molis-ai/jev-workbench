@@ -18,6 +18,19 @@ test("single workspace: three primitives, bilingual drafts, publish and call, ar
     page.locator(".api-table").getByText("/v1/functions/:key/invoke"),
   ).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
+  await page.locator(".rail-bottom").getByRole("button", { name: "Settings", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "TypeSafe", exact: true })).toBeVisible();
+  await page.screenshot({ path: ".playwright/settings.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: ".playwright/settings-mobile.png", fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await page.getByRole("button", { name: "Local service", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Local service", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Backup and export", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Backup and export", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Add function" }).click();
   await page.getByRole("button", { name: /^Choice/ }).click();
   await expect(
     page.getByRole("heading", { name: "Ticket routing", exact: true }),

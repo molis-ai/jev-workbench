@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Plus,
-  Filter,
+  SlidersHorizontal,
   Search,
   ChevronRight,
   Target,
@@ -34,6 +34,7 @@ export function FunctionDirectory({
   onApi,
   onConnections,
   connectionsActive,
+  settingsActive,
   port,
 }: any) {
   const [search, setSearch] = useState(""),
@@ -77,41 +78,43 @@ export function FunctionDirectory({
     },
   ];
   return (
-    <aside className="function-rail directory" aria-label={tr("函数列表")}>
-      <div className="rail-brand">
-        <span className="brand-symbol">j</span>
-        <strong>Jev</strong>
-        <span>Workbench</span>
-      </div>
-      <div className="directory-toolbar">
-        <Button onClick={onNew} aria-label={tr("新增函数")}>
-          <Plus size={17} />
-          {tr("新建函数")}
-        </Button>
-        <Button
+    <aside className="rail directory" aria-label={tr("函数列表")}>
+      <div className="rail-top">
+        <label className="rail-search">
+          <Search size={13} />
+          <input
+            aria-label={tr("搜索函数")}
+            placeholder={tr("搜索名称或 Key")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </label>
+        <button
+          className="icon-button"
+          aria-label={tr("新增函数")}
+          title={tr("新建函数")}
+          onClick={onNew}
+        >
+          <Plus size={16} />
+        </button>
+        <button
+          className={
+            "icon-button has-dot " +
+            (filters || status !== "all" || primitive !== "all" ? "on" : "")
+          }
           aria-label={tr("筛选函数")}
           aria-expanded={filters}
           aria-pressed={filters}
-          className={filters ? "filter-active" : ""}
           onClick={() => setFilters(!filters)}
         >
-          <Filter size={18} />
+          <SlidersHorizontal size={15} />
           {(status !== "all" || primitive !== "all") && (
             <i className="filter-dot" />
           )}
-        </Button>
+        </button>
       </div>
-      <label className="rail-search">
-        <Search size={15} />
-        <input
-          aria-label={tr("搜索函数")}
-          placeholder={tr("搜索名称或 Key")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </label>
       {filters && (
-        <div className="directory-filters">
+        <div className="rail-filters">
           <select
             aria-label={tr("状态筛选")}
             value={status}
@@ -134,7 +137,7 @@ export function FunctionDirectory({
           </select>
         </div>
       )}
-      <div className="directory-groups">
+      <div className="rail-groups">
         {loading && <p className="rail-empty">{tr("正在读取函数…")}</p>}
         {error && (
           <Notice error>
@@ -154,8 +157,8 @@ export function FunctionDirectory({
                 aria-expanded={open}
                 onClick={() => setGroups({ ...groups, [key]: !groups[key] })}
               >
-                <ChevronRight size={15} className={open ? "expanded" : ""} />
-                <Icon size={17} />
+                <ChevronRight size={13} className={open ? "expanded" : ""} />
+                <Icon size={14} />
                 <span>{tr(label)}</span>
                 <span className="group-count">{filtered.length}</span>
               </button>
@@ -196,18 +199,18 @@ export function FunctionDirectory({
                           title={`${f.display_name}\n${f.function_key}`}
                           onClick={() => onSelect(f.id)}
                         >
-                          <span className="directory-name">
-                            {f.display_name}
-                          </span>
                           <span className="type-tags">
                             {(f.primitives ?? []).map((p: string) => (
                               <span
                                 key={p}
                                 className={"primitive-tag type-" + p}
                               >
-                                {p[0].toUpperCase() + p.slice(1)}
+                                {p}
                               </span>
                             ))}
+                          </span>
+                          <span className="directory-name">
+                            {f.display_name}
                           </span>
                           <span
                             className={
@@ -225,7 +228,7 @@ export function FunctionDirectory({
                                         : "")
                             }
                           >
-                            <IconState size={13} />
+                            <IconState size={11} />
                             <span>{tr(label)}</span>
                           </span>
                         </button>
@@ -233,7 +236,7 @@ export function FunctionDirectory({
                           <summary
                             aria-label={tr("函数操作 ") + f.display_name}
                           >
-                            <MoreHorizontal size={15} />
+                            <MoreHorizontal size={14} />
                           </summary>
                           <div>
                             {f.deleted_at ? (
@@ -319,19 +322,22 @@ export function FunctionDirectory({
           className={connectionsActive ? "nav-active" : ""}
           onClick={onConnections}
         >
-          <Plug size={16} />
+          <Plug size={14} />
           {tr("调用与接入")}
         </Button>
         <Button onClick={onApi}>
-          <BookOpen size={16} />
+          <BookOpen size={14} />
           {tr("接口文档")}
         </Button>
         <Button onClick={onRuns}>
-          <History size={16} />
+          <History size={14} />
           {tr("调用记录")}
         </Button>
-        <Button onClick={onSettings}>
-          <Settings size={16} />
+        <Button
+          className={settingsActive ? "nav-active" : ""}
+          onClick={onSettings}
+        >
+          <Settings size={14} />
           {tr("设置")}
         </Button>
         <small>127.0.0.1:{port}</small>

@@ -6,6 +6,8 @@ import { isAbsolute } from "node:path";
 import { randomUUID } from "node:crypto";
 import { type DB, now, audit } from "./storage";
 import { fail } from "./errors";
+import { skillAgents } from "./runtimes";
+export { skillAgents };
 
 const exec = promisify(execFile);
 type Run = (
@@ -13,11 +15,6 @@ type Run = (
   args: readonly string[],
   options: { cwd?: string; timeout?: number; maxBuffer?: number },
 ) => Promise<{ stdout: string; stderr: string }>;
-export const skillAgents: Record<string, string> = {
-  claude_code: "claude-code",
-  codex: "codex",
-  opencode: "opencode",
-};
 export const skillPackages: Record<string, { source: string; skill: string }> = {
   "jev-workbench": { source: process.cwd(), skill: "jev-workbench" },
   "typesafe-ai": { source: "typesafe-ai/skills", skill: "typesafe-ai" },
@@ -28,7 +25,7 @@ export function skillCommand(
   action: "add" | "remove",
   pkg = "typesafe-ai",
 ) {
-  const agent = skillAgents[runtime];
+  const agent = skillAgents[runtime as keyof typeof skillAgents];
   const pack = skillPackages[pkg];
   if (!agent || !pack) return null;
   const args = ["--yes", "skills@latest"];

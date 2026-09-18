@@ -1,7 +1,6 @@
 import { build } from "esbuild";
 import { build as viteBuild } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwind from "@tailwindcss/vite";
 import { mkdir, copyFile, writeFile } from "node:fs/promises";
 await build({
   entryPoints: {
@@ -20,7 +19,7 @@ await build({
 });
 await viteBuild({
   root: "apps/web",
-  plugins: [react(), tailwind()],
+  plugins: [react()],
   build: {
     outDir: "../../dist/web",
     emptyOutDir: true,

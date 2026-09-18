@@ -48,7 +48,7 @@ it("upgrades a version-1 database without losing an existing function or saved e
     ).toBe(true);
     expect(
       db
-        .prepare("SELECT 1 FROM schema_migrations WHERE version=3")
+        .prepare("SELECT 1 FROM schema_migrations WHERE version=6")
         .get(),
     ).toBeTruthy();
   } finally {

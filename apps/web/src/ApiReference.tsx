@@ -17,20 +17,15 @@ export function ApiReference({ origin }: { origin: string }) {
   const [lang, setLang] = useState("cURL"),
     [copied, setCopied] = useState("");
   const base = origin.replace(/\/$/, "");
-  const invoke = snippet(
-    lang,
-    `${base}/v1/functions/ticket_route/invoke`,
-    1,
-    {
-      properties: {
-        content: {
-          type: "string",
-          description: "Ticket content",
-          minLength: 1,
-        },
+  const invoke = snippet(lang, `${base}/v1/functions/ticket_route/invoke`, 1, {
+    properties: {
+      content: {
+        type: "string",
+        description: "Ticket content",
+        minLength: 1,
       },
     },
-  );
+  });
   const official = officialSnippet(lang, base);
   async function copy(label: string, text: string) {
     await navigator.clipboard.writeText(text);
@@ -96,7 +91,8 @@ export function ApiReference({ origin }: { origin: string }) {
       <pre className="code-block">{official}</pre>
       <strong>{tr("MCP")}</strong>
       <p className="muted">
-        jev_list_functions · jev_describe_function · jev_invoke
+        <code>jev_list_functions · jev_describe_function · jev_invoke</code>
+        <br />
         {tr("MCP 工具只用只读凭证，不读数据库或供应商 Key。")}
       </p>
     </div>

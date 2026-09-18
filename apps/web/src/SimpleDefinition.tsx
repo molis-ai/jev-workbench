@@ -12,9 +12,9 @@ export function SimpleDefinition({
     setConfig(v);
   };
   return (
-    <div className="config-sheet simple-definition">
-      <label className="config-row">
-        <div className="config-copy">
+    <div className="sheet simple-definition">
+      <label className="sheet-row">
+        <div className="sheet-copy">
           <strong>{tr("函数名称")}</strong>
           <p>{tr("列表和调用方看到的名字。")}</p>
         </div>
@@ -25,11 +25,11 @@ export function SimpleDefinition({
         />
       </label>
       {Object.entries(c.questions).map(([id, q]: [string, any]) => (
-        <section className="config-question" key={id}>
-          <div className="config-row">
-            <div className="config-copy">
+        <section className="sheet-group" key={id}>
+          <div className="sheet-row">
+            <div className="sheet-copy">
               <strong>{tr("判断说明")}</strong>
-              <p className="config-hint">
+              <p className="row">
                 <span className={"primitive-tag type-" + q.type}>
                   {q.type[0].toUpperCase() + q.type.slice(1)}
                 </span>
@@ -55,14 +55,14 @@ export function SimpleDefinition({
             />
           </div>
           {q.type === "choice" && (
-            <div className="config-row config-row-stack">
-              <div className="config-copy">
+            <div className="sheet-row stacked">
+              <div className="sheet-copy">
                 <strong>{tr("判断标准")}</strong>
                 <p>{tr("左边是返回给调用方的值，右边是给模型的说明。")}</p>
               </div>
-              <div className="config-options">
+              <div className="option-list">
                 {Object.entries(q.criteria).map(([key, value]) => (
-                  <label className="config-option" key={key}>
+                  <label className="option-row" key={key}>
                     <code>{key}</code>
                     <input
                       aria-label={tr("选项说明 ") + key}
@@ -81,22 +81,21 @@ export function SimpleDefinition({
             </div>
           )}
           {q.type === "score" && (
-            <div className="config-row config-row-stack">
-              <div className="config-copy">
+            <div className="sheet-row stacked">
+              <div className="sheet-copy">
                 <strong>{tr("判断标准")}</strong>
                 <p>{tr("等级按从低到高排列，返回从 0 开始的索引。")}</p>
               </div>
-              <div className="config-options">
+              <div className="option-list">
                 {q.criteria.map((value: string, i: number) => (
-                  <label className="config-option" key={i}>
+                  <label className="option-row" key={i}>
                     <code>{i}</code>
                     <input
                       aria-label={tr("等级 {0}", i)}
                       value={value}
                       onChange={(e) =>
                         change(
-                          (v) =>
-                            (v.questions[id].criteria[i] = e.target.value),
+                          (v) => (v.questions[id].criteria[i] = e.target.value),
                         )
                       }
                     />
@@ -106,8 +105,8 @@ export function SimpleDefinition({
             </div>
           )}
           {q.type === "noul" && (
-            <div className="config-row">
-              <div className="config-copy">
+            <div className="sheet-row">
+              <div className="sheet-copy">
                 <strong>{tr("是的标准（可选）")}</strong>
                 <p>{tr("Noul 返回是的概率，没有独立 confidence。")}</p>
               </div>

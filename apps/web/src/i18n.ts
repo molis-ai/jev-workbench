@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from "react";
 import english from "./en.json";
-const chinese = Object.fromEntries(Object.entries(english).map(([zh, en]) => [en, zh]));
+const chinese = Object.fromEntries(
+  Object.entries(english).map(([zh, en]) => [en, zh]),
+);
 export type Language = "zh" | "en";
 let language: Language = (() => {
   try {
